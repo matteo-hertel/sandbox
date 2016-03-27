@@ -1,9 +1,10 @@
-load_balanvcer:
+load_balancer:
     image: tutum/haproxy
     links:
         - web
     ports:
         - "80:80"
+        - "443:443"
 
 
 cache :
