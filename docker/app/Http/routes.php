@@ -12,5 +12,5 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('welcome')->with("user", \App\User::orderBy(DB::raw('RAND()'))->first());
 });

@@ -4,10 +4,8 @@ load_balancer:
         - web
     ports:
         - "80:80"
-        - "443:443"
 
-
-cache :
+cache:
     image: redis
 
 database:
@@ -25,6 +23,8 @@ web:
         - ./:/var/www
     environment:
         - APP_ENV=production
+        - DB_HOST=database
         - DB_DATABASE=laravel
+        - DB_USERNAME=root
         - DB_PASSWORD=SuperSecretPassword123
         - VIRTUAL_HOST=laravel.local
