@@ -2,11 +2,24 @@ load_balancer:
     image: tutum/haproxy
     links:
         - web
+        - phpmyadmin
     ports:
         - "80:80"
 
 cache:
     image: redis
+
+phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8080:80
+    links:
+      - database
+    environment:
+        - PMA_HOST=database
+        - PMA_USER=root
+        - PMA_PASSWORD=SuperSecretPassword123
+
 
 database:
     image: mysql
