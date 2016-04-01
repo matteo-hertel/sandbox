@@ -40,6 +40,14 @@
             <div class="content">
                 <div class="title">Laravel 5</div>
                 <h3>{{ gethostname() }}</h3>
+<b>
+    @foreach($dir as $file)
+        <p>
+    {{$file}}        
+</p>
+    @endforeach
+</b>
+
                 @if($user)
                     <h2>One Random User</h2>
                     <p>Name: {{$user->name}}</p>
