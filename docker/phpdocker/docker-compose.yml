@@ -31,7 +31,7 @@ laravel-php-fpm:
   dockerfile: docker/Dockerfile.php-fpm.conf
   container_name: laravel-php-fpm
   volumes:
-    - ..:/var/www/laravel
+    - ./code:/var/www/laravel
   links:
     - laravel-mysql
     - laravel-redis
