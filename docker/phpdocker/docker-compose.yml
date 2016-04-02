@@ -1,0 +1,37 @@
+###############################################################################
+#                          Generated on phpdocker.io                          #
+###############################################################################
+
+laravel-redis:
+  image: tenstartups/redis:latest
+  container_name: laravel-redis
+
+laravel-mysql:
+  image: mysql:5.7
+  container_name: laravel-mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=secret
+    - MYSQL_DATABASE=homestead
+    - MYSQL_USER=homestead
+    - MYSQL_PASSWORD=secret
+
+laravel-webserver:
+  build: .
+  dockerfile: docker/Dockerfile.nginx.conf
+  container_name: laravel-webserver
+  volumes:
+      - ..:/var/www/laravel
+  ports:
+   - "8080:80"
+  links:
+   - laravel-php-fpm
+
+laravel-php-fpm:
+  build: .
+  dockerfile: docker/Dockerfile.php-fpm.conf
+  container_name: laravel-php-fpm
+  volumes:
+    - ..:/var/www/laravel
+  links:
+    - laravel-mysql
+    - laravel-redis
