@@ -3,9 +3,9 @@ cache:
 
 commander:
   image: higebu/redis-commander
-  links: 
+  links:
     - cache
-  ports: 
+  ports:
     - "8081:8081"
 
 database:
