@@ -20,7 +20,7 @@ mysql:
 
 webserver:
   build: .
-  dockerfile: 3party/Dockerfile
+  dockerfile: ./3party/Dockerfile
   volumes:
       - ./code:/var/www/
   links:
