@@ -2,30 +2,35 @@
 # Base image
 ################################################################################
 
-FROM php:7-cli
+FROM php:7-fpm
 
-MAINTAINER "Matteo Hertel" <info@matteohertel.com>
+MAINTAINER "Andrew McLagan" <andrew@ethicaljobs.com.au>
+
+################################################################################
+# Add keys
+################################################################################
+
+COPY ./3party/keys/nginx_signing.key /var/keys/nginx_signing.key
 
 ################################################################################
 # Add Nginx repo
 ################################################################################
 
-#ENV NGINX_VERSION 1.9.12-1~jessie
 
-#RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 \
-#    && echo "deb http://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/apt/sources.list \
+RUN sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0x5a16e7281be7a449\
+    echo deb http://dl.hhvm.com/debian jessie nginx | tee /etc/apt/sources.list.d/hhvm.list\
+    apt-get update\
+    apt-get install hhvm
+
 
 ################################################################################
-# Install supervisor, Nginx & tools
+# Install supervisor, HHVM, Nginx & tools
 ################################################################################
 
 RUN apt-get update && apt-get install -my \
 	supervisor \
 	ca-certificates \
 	nginx \
-	#nginx-module-xslt \
-	#nginx-module-geoip \
-	#nginx-module-image-filter \
 	gettext-base \
 	libmcrypt-dev \
 	git \
@@ -61,11 +66,11 @@ RUN composer global require hirak/prestissimo
 # Configuration
 ##############################################################################
 
-COPY ./config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./3party/config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-COPY ./config/php.ini /etc/php/7.0/cli/php.ini
+COPY ./3party/config/php.ini /usr/local/etc/php
 
-COPY ./config/nginx.conf /etc/nginx/nginx.conf
+COPY ./3party/config/nginx.conf /etc/nginx/nginx.conf
 
 
 ################################################################################
