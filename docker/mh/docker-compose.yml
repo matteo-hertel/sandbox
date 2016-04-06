@@ -1,0 +1,5 @@
+webserver:
+  build: .
+  dockerfile: ./Dockerfile
+  volumes:
+      - ./code:/var/www/
