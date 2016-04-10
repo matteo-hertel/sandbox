@@ -1,4 +1,17 @@
+cache:
+  image: redis
+  ports:
+    - 6379:6379
+
+commander:
+  image: higebu/redis-commander
+  links:
+    - cache
+  command: --redis-host cache
+  ports:
+    - "8081:8081"
+
 node:
   build: .
   ports:
-    - "8080:8080"
+    - "80:80"
