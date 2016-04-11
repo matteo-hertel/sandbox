@@ -1,5 +1,6 @@
 webserver:
   build: .
-  dockerfile: ./Dockerfile
   volumes:
       - ./code:/var/www/
+  ports:
+    - "80:80"
