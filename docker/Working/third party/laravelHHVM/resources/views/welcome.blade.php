@@ -40,21 +40,6 @@
             <div class="content">
                 <div class="title">Laravel 5</div>
                 <h3>{{ gethostname() }}</h3>
-<b>
-    @foreach($dir as $file)
-        <p>
-    {{$file}}        
-</p>
-    @endforeach
-</b>
-
-                @if($user)
-                    <h2>One Random User</h2>
-                    <p>Name: {{$user->name}}</p>
-                    <p>Email: {{$user->email}}</p>
-                    <p>Created: {{$user->created_at->format("d/m/Y H:i:s")}}</p>
-                    <p>Updated: {{$user->updated_at->format("d/m/Y H:i:s")}}</p>
-                @endif
             </div>
         </div>
     </body>

@@ -1,28 +1,35 @@
 cache:
   image: redis
 
-commander:
-  image: higebu/redis-commander
-  links:
-    - cache
-  ports:
-    - "8081:8081"
-
 database:
   environment:
     - MYSQL_ROOT_PASSWORD=SuperSecretPassword123
     - MYSQL_DATABASE=laravel
   image: mysql
-# html:
-#    image: busybox
-#    volumes:
-#      - "./static:/var/www/public/media"
+
 load_balancer:
   image: tutum/haproxy
   links:
     - web
   ports:
     - "80:80"
+
+web:
+  environment:
+    - APP_ENV=production
+    - DB_HOST=database
+    - DB_DATABASE=laravel
+    - DB_USERNAME=root
+    - DB_PASSWORD=SuperSecretPassword123
+    - VIRTUAL_HOST=laravel.local
+
+  image: andrewmclagan/nginx-hhvm
+  links:
+    - database
+    - cache
+  volumes:
+    - "./:/var/www"
+
 phpmyadmin:
   environment:
     - PMA_HOST=database
@@ -33,19 +40,11 @@ phpmyadmin:
     - database
   ports:
     - "8080:80"
-web:
-  environment:
-    - APP_ENV=production
-    - DB_HOST=database
-    - DB_DATABASE=laravel
-    - DB_USERNAME=root
-    - DB_PASSWORD=SuperSecretPassword123
-    - VIRTUAL_HOST=laravel.local
-  image: andrewmclagan/nginx-hhvm
+
+commander:
+  image: higebu/redis-commander
   links:
-    - database
     - cache
-  volumes:
-    - "./:/var/www"
-  # volumes_from:
-  #    - html
+  ports:
+    - "8081:8081"
+  command: --redis-host cache

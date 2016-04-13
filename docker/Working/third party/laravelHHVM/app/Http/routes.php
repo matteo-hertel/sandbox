@@ -12,10 +12,5 @@
 */
 
 Route::get('/', function () {
-    return view('welcome')->with(
-        [
-            'user' => \App\User::orderBy(DB::raw('RAND()'))->first(),
-            'dir' => File::allFiles(base_path('public')),
-        ]
-    );
+    return view('welcome');
 });
