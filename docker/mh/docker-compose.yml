@@ -1,6 +1,0 @@
-webserver:
-  build: .
-  volumes:
-      - ./code:/var/www/
-  ports:
-    - "80:80"
