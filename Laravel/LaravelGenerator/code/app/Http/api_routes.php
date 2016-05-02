@@ -16,3 +16,5 @@
 Route::resource('blogs', 'BlogAPIController');
 
 Route::resource('blogs', 'BlogAPIController');
+
+Route::resource('blogs', 'BlogAPIController');

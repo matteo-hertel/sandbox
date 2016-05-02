@@ -28,18 +28,18 @@ web:
     - database
     - cache
   volumes:
-    - "./code:/var/www"
+    - "./code:/data/www"
 
-# phpmyadmin:
-#   environment:
-#     - PMA_HOST=database
-#     - PMA_USER=root
-#     - PMA_PASSWORD=SuperSecretPassword123
-#   image: phpmyadmin/phpmyadmin
-#   links:
-#     - database
-#   ports:
-#     - "8080:80"
+phpmyadmin:
+  environment:
+    - PMA_HOST=database
+    - PMA_USER=root
+    - PMA_PASSWORD=SuperSecretPassword123
+  image: phpmyadmin/phpmyadmin
+  links:
+    - database
+  ports:
+    - "8080:80"
 
 # commander:
 #   image: higebu/redis-commander

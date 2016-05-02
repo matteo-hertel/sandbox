@@ -29,6 +29,11 @@ Route::group(['prefix' => 'api', 'namespace' => 'API'], function () {
 });
 
 
+Route::get('migrate', function(){
+	dd(Artisan::call('migrate', [
+    '--force' => true,
+]));
+});
 Route::get('login', 'Auth\AuthController@getLogin');
 Route::post('login', 'Auth\AuthController@postLogin');
 Route::get('logout', 'Auth\AuthController@logout');
@@ -51,6 +56,8 @@ Route::get('field_template', '\InfyOm\GeneratorBuilder\Controllers\GeneratorBuil
 
 Route::post('generator_builder/generate', '\InfyOm\GeneratorBuilder\Controllers\GeneratorBuilderController@generate');
 
+
+Route::resource('blogs', 'BlogController');
 
 Route::resource('blogs', 'BlogController');
 
