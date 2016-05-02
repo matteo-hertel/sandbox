@@ -1,4 +1,5 @@
 <?php
+echo gethostname();
 
 phpinfo();
 
