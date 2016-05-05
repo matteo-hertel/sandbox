@@ -1,1 +1,191 @@
-!function(t){function e(i){if(s[i])return s[i].exports;var o=s[i]={exports:{},id:i,loaded:!1};return t[i].call(o.exports,o,o.exports,e),o.loaded=!0,o.exports}var s={};return e.m=t,e.c=s,e.p="",e(0)}([function(t,e){t.exports={name:"post",el:"#post",data:function(){return _.merge({posts:!1,config:{filter:this.$session.get("posts.filter",{order:"date desc",limit:25})},pages:0,count:"",selected:[],canEditAll:!1},window.$data)},ready:function(){this.resource=this.$resource("api/blog/post{/id}"),this.load()},watch:{"config.page":"load","config.filter":{handler:function(t){this.load(0),this.$session.set("posts.filter",t)},deep:!0}},computed:{statusOptions:function(){var t=_.map(this.$data.statuses,function(t,e){return{text:t,value:e}});return[{label:this.$trans("Filter by"),options:t}]},authors:function(){var t=_.map(this.$data.authors,function(t){return{text:t.username,value:t.user_id}});return[{label:this.$trans("Filter by"),options:t}]}},methods:{active:function(t){return-1!=this.selected.indexOf(t.id)},save:function(t){this.resource.save({id:t.id},{post:t}).then(function(){this.load(),this.$notify("Post saved.")})},status:function(t){var e=this.getSelected();e.forEach(function(e){e.status=t}),this.resource.save({id:"bulk"},{posts:e}).then(function(){this.load(),this.$notify("Posts saved.")})},remove:function(){this.resource["delete"]({id:"bulk"},{ids:this.selected}).then(function(){this.load(),this.$notify("Posts deleted.")})},toggleStatus:function(t){t.status=2===t.status?3:2,this.save(t)},copy:function(){this.selected.length&&this.resource.save({id:"copy"},{ids:this.selected}).then(function(){this.load(),this.$notify("Posts copied.")})},load:function(t){t=void 0!==t?t:this.config.page,this.resource.query({filter:this.config.filter,page:t}).then(function(e){var s=e.data;this.$set("posts",s.posts),this.$set("pages",s.pages),this.$set("count",s.count),this.$set("config.page",t),this.$set("selected",[])})},getSelected:function(){return this.posts.filter(function(t){return-1!==this.selected.indexOf(t.id)},this)},getStatusText:function(t){return this.statuses[t.status]}}},Vue.ready(t.exports)}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+
+
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports) {
+
+	module.exports = {
+
+	    name: 'post',
+
+	    el: '#post',
+
+	    data: function() {
+	        return _.merge({
+	            posts: false,
+	            config: {
+	                filter: this.$session.get('posts.filter', {order: 'date desc', limit:25})
+	            },
+	            pages: 0,
+	            count: '',
+	            selected: [],
+	            canEditAll: false
+	        }, window.$data);
+	    },
+
+	    ready: function () {
+
+	        this.resource = this.$resource('api/blog/post{/id}');
+	        this.load();
+	    },
+
+	    watch: {
+
+	        'config.page': 'load',
+
+	        'config.filter': {
+	            handler: function (filter) {
+	                this.load(0);
+	                this.$session.set('posts.filter', filter);
+	            },
+	            deep: true
+	        }
+
+	    },
+
+	    computed: {
+
+	        statusOptions: function () {
+
+	            var options = _.map(this.$data.statuses, function (status, id) {
+	                return { text: status, value: id };
+	            });
+
+	            return [{ label: this.$trans('Filter by'), options: options }];
+	        },
+
+	        authors: function() {
+
+	            var options = _.map(this.$data.authors, function (author) {
+	                return { text: author.username, value: author.user_id };
+	            });
+
+	            return [{ label: this.$trans('Filter by'), options: options }];
+	        }
+	    },
+
+	    methods: {
+
+	        active: function (post) {
+	            return this.selected.indexOf(post.id) != -1;
+	        },
+
+	        save: function (post) {
+	            this.resource.save({ id: post.id }, { post: post }).then(function () {
+	                this.load();
+	                this.$notify('Post saved.');
+	            });
+	        },
+
+	        status: function(status) {
+
+	            var posts = this.getSelected();
+
+	            posts.forEach(function(post) {
+	                post.status = status;
+	            });
+
+	            this.resource.save({ id: 'bulk' }, { posts: posts }).then(function () {
+	                this.load();
+	                this.$notify('Posts saved.');
+	            });
+	        },
+
+	        remove: function() {
+
+	            this.resource.delete({ id: 'bulk' }, { ids: this.selected }).then(function () {
+	                this.load();
+	                this.$notify('Posts deleted.');
+	            });
+	        },
+
+	        toggleStatus: function (post) {
+	            post.status = post.status === 2 ? 3 : 2;
+	            this.save(post);
+	        },
+
+	        copy: function() {
+
+	            if (!this.selected.length) {
+	                return;
+	            }
+
+	            this.resource.save({ id: 'copy' }, { ids: this.selected }).then(function () {
+	                this.load();
+	                this.$notify('Posts copied.');
+	            });
+	        },
+
+	        load: function (page) {
+
+	            page = page !== undefined ? page : this.config.page;
+
+	            this.resource.query({ filter: this.config.filter, page: page }).then(function (res) {
+
+	                var data = res.data;
+
+	                this.$set('posts', data.posts);
+	                this.$set('pages', data.pages);
+	                this.$set('count', data.count);
+	                this.$set('config.page', page);
+	                this.$set('selected', []);
+	            });
+	        },
+
+	        getSelected: function() {
+	            return this.posts.filter(function(post) { return this.selected.indexOf(post.id) !== -1; }, this);
+	        },
+
+	        getStatusText: function(post) {
+	            return this.statuses[post.status];
+	        }
+
+	    }
+
+	};
+
+	Vue.ready(module.exports);
+
+
+/***/ }
+/******/ ]);

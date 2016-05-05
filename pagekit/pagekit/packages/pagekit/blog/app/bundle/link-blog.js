@@ -1,1 +1,120 @@
-!function(o){function t(e){if(s[e])return s[e].exports;var i=s[e]={exports:{},id:e,loaded:!1};return o[e].call(i.exports,i,i.exports,t),i.loaded=!0,i.exports}var s={};return t.m=o,t.c=s,t.p="",t(0)}([function(o,t,s){var e,i;e=s(1),i=s(4),o.exports=e||{},o.exports.__esModule&&(o.exports=o.exports["default"]),i&&(("function"==typeof o.exports?o.exports.options||(o.exports.options={}):o.exports).template=i)},function(o,t){"use strict";o.exports={link:{label:"Blog"},props:["link"],data:function(){return{posts:[]}},created:function(){this.$http.get("api/blog/post",{filter:{limit:1e3}}).then(function(o){this.$set("posts",o.data.posts)})},ready:function(){this.link="@blog"},filters:{link:function(o){return"@blog/id?id="+o.id}}},window.Links.components["link-blog"]=o.exports},,,function(o,t){o.exports="<div class=uk-form-row> <label for=form-link-blog class=uk-form-label>{{ 'View' | trans }}</label> <div class=uk-form-controls> <select id=form-link-blog class=uk-width-1-1 v-model=link> <option value=@blog>{{ 'Posts View' | trans }}</option> <optgroup :label=\"'Posts' | trans\"> <option v-for=\"p in posts\" :value=\"p | link\">{{ p.title }}</option> </optgroup> </select> </div> </div>"}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+
+
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__vue_script__ = __webpack_require__(1)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] packages\\pagekit\\blog\\app\\components\\link-blog.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(2)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "C:\\Users\\Matteo\\Desktop\\Code\\publicsandbox\\pagekit\\pagekit\\packages\\pagekit\\blog\\app\\components\\link-blog.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = {
+
+	    link: {
+	        label: 'Blog'
+	    },
+
+	    props: ['link'],
+
+	    data: function data() {
+	        return {
+	            posts: []
+	        };
+	    },
+
+	    created: function created() {
+	        this.$http.get('api/blog/post', { filter: { limit: 1000 } }).then(function (res) {
+	            this.$set('posts', res.data.posts);
+	        });
+	    },
+
+	    ready: function ready() {
+	        this.link = '@blog';
+	    },
+
+	    filters: {
+
+	        link: function link(post) {
+	            return '@blog/id?id=' + post.id;
+	        }
+
+	    }
+
+	};
+
+	window.Links.components['link-blog'] = module.exports;
+
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
+
+	module.exports = "\n\n<div class=\"uk-form-row\">\n    <label for=\"form-link-blog\" class=\"uk-form-label\">{{ 'View' | trans }}</label>\n    <div class=\"uk-form-controls\">\n        <select id=\"form-link-blog\" class=\"uk-width-1-1\" v-model=\"link\">\n            <option value=\"@blog\">{{ 'Posts View' | trans }}</option>\n            <optgroup :label=\"'Posts' | trans\">\n                <option v-for=\"p in posts\" :value=\"p | link\">{{ p.title }}</option>\n            </optgroup>\n        </select>\n    </div>\n</div>\n\n";
+
+/***/ }
+/******/ ]);

@@ -24,3 +24,14 @@ web:
     - database
   volumes:
     - "./pagekit:/var/www/public"
+
+phpmyadmin:
+  environment:
+    - PMA_HOST=database
+    - PMA_USER=root
+    - PMA_PASSWORD=SuperSecretPassword123
+  image: phpmyadmin/phpmyadmin
+  links:
+    - database
+  ports:
+    - "8080:80"

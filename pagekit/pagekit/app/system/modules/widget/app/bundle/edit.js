@@ -1,1 +1,144 @@
-!function(t){function i(n){if(e[n])return e[n].exports;var s=e[n]={exports:{},id:n,loaded:!1};return t[n].call(s.exports,s,s.exports,i),s.loaded=!0,s.exports}var e={};return i.m=t,i.c=e,i.p="",i(0)}([function(t,i){t.exports={el:"#widget-edit",mixins:[window.Widgets],data:function(){return _.merge({form:{},sections:[],active:0},window.$data)},created:function(){var t,i=[],e=_.kebabCase(this.widget.type);_.forIn(this.$options.components,function(t,e){var n=t.options||{};n.section&&i.push(_.extend({name:e,priority:0},n.section))}),i=_.sortBy(i.filter(function(n){return t=n.name.match("(.+):(.+)"),null===t?!_.find(i,{name:e+":"+n.name}):t[1]==e},this),"priority"),this.$set("sections",i)},ready:function(){var t=UIkit.tab(this.$els.tab,{connect:this.$els.content}),i=this;if(t.on("change.uk.tab",function(t,e){i.active=e.index()}),this.$watch("active",function(i){t.switcher.show(i)}),this.$state("active"),!this.widget.id){var e=new RegExp("[?&]position=([^&]*)").exec(location.search);this.widget.position=e&&decodeURIComponent(e[1].replace(/\+/g," "))||""}},methods:{save:function(){this.$broadcast("save",{widget:this.widget}),this.$resource("api/site/widget{/id}").save({id:this.widget.id},{widget:this.widget}).then(function(t){var i=t.data;this.$dispatch("saved"),this.widget.id||window.history.replaceState({},"",this.$url.route("admin/site/widget/edit",{id:i.widget.id})),this.$set("widget",i.widget),this.$notify("Widget saved.")},function(t){this.$notify(t.data,"danger")})},cancel:function(){this.$dispatch("cancel")}}},Vue.ready(t.exports)}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+
+
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports) {
+
+	module.exports = {
+
+	    el: '#widget-edit',
+
+	    mixins: [window.Widgets],
+
+	    data: function () {
+	        return _.merge({form: {}, sections: [], active: 0}, window.$data);
+	    },
+
+	    created: function () {
+
+	        var sections = [], type = _.kebabCase(this.widget.type), active;
+
+	        _.forIn(this.$options.components, function (component, name) {
+
+	            var options = component.options || {};
+
+	            if (options.section) {
+	                sections.push(_.extend({name: name, priority: 0}, options.section));
+	            }
+
+	        });
+
+	        sections = _.sortBy(sections.filter(function (section) {
+
+	            active = section.name.match('(.+):(.+)');
+
+	            if (active === null) {
+	                return !_.find(sections, {name: type + ':' + section.name});
+	            }
+
+	            return active[1] == type;
+	        }, this), 'priority');
+
+	        this.$set('sections', sections);
+
+	    },
+
+	    ready: function () {
+
+	        var tab = UIkit.tab(this.$els.tab, {connect: this.$els.content});
+
+	        var vm = this;
+
+	        tab.on('change.uk.tab', function (tab, current) {
+	            vm.active = current.index();
+	        });
+
+	        this.$watch('active', function (active) {
+	            tab.switcher.show(active);
+	        });
+
+	        this.$state('active');
+
+	        // set position from get param
+	        if (!this.widget.id) {
+	            var match = new RegExp('[?&]position=([^&]*)').exec(location.search);
+	            this.widget.position = (match && decodeURIComponent(match[1].replace(/\+/g, ' '))) || '';
+	        }
+
+	    },
+
+	    methods: {
+
+	        save: function () {
+	            this.$broadcast('save', {widget: this.widget});
+	            this.$resource('api/site/widget{/id}').save({id: this.widget.id}, {widget: this.widget}).then(function (res) {
+
+	                var data = res.data;
+
+	                this.$dispatch('saved');
+
+	                if (!this.widget.id) {
+	                    window.history.replaceState({}, '', this.$url.route('admin/site/widget/edit', {id: data.widget.id}));
+	                }
+
+	                this.$set('widget', data.widget);
+
+	                this.$notify('Widget saved.');
+	            }, function (res) {
+	                this.$notify(res.data, 'danger');
+	            });
+	        },
+
+	        cancel: function () {
+	            this.$dispatch('cancel');
+	        }
+
+	    }
+
+	};
+
+	Vue.ready(module.exports);
+
+
+/***/ }
+/******/ ]);

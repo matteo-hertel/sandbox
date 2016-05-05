@@ -1,1 +1,347 @@
-!function(e){function t(i){if(n[i])return n[i].exports;var s=n[i]={exports:{},id:i,loaded:!1};return e[i].call(s.exports,s,s.exports,t),s.loaded=!0,s.exports}var n={};return t.m=e,t.c=n,t.p="",t(0)}([function(e,t){e.exports={el:"#site",data:function(){return _.merge({edit:void 0,menu:this.$session.get("site.menu",{}),menus:[],nodes:[],tree:!1,selected:[]},window.$data)},created:function(){this.Menus=this.$resource("api/site/menu{/id}"),this.Nodes=this.$resource("api/site/node{/id}");var e=this;this.load().then(function(){e.$set("menu",_.find(e.menus,"id",e.$get("menu.id"))||e.menus[0])})},ready:function(){var e=this;UIkit.nestable(this.$els.nestable,{maxDepth:20,group:"site.nodes"}).on("change.uk.nestable",function(t,n,i,s){s&&"removed"!==s&&e.Nodes.save({id:"updateOrder"},{menu:e.menu.id,nodes:n.list()}).then(e.load,function(){this.$notify("Reorder failed.","danger")})})},methods:{load:function(){var e=this;return Vue.Promise.all([this.Menus.query(),this.Nodes.query()]).then(function(t){e.$set("menus",t[0].data),e.$set("nodes",t[1].data),e.$set("selected",[]),_.find(e.menus,"id",e.$get("menu.id"))||e.$set("menu",e.menus[0])},function(){e.$notify("Loading failed.","danger")})},isActive:function(e){return this.menu&&this.menu.id===e.id},selectMenu:function(e){this.$set("selected",[]),this.$set("menu",e),this.$session.set("site.menu",e)},removeMenu:function(e){this.Menus["delete"]({id:e.id})["finally"](this.load)},editMenu:function(e){e||(e={id:"",label:""}),this.$set("edit",_.merge({positions:[]},e)),this.$refs.modal.open()},saveMenu:function(e){this.Menus.save({menu:e}).then(this.load,function(e){this.$notify(e.data,"danger")}),this.cancel()},getMenu:function(e){return _.find(this.menus,function(t){return _.contains(t.positions,e)})},cancel:function(){this.$refs.modal.close()},status:function(e){var t=this.getSelected();t.forEach(function(t){t.status=e}),this.Nodes.save({id:"bulk"},{nodes:t}).then(function(){this.load(),this.$notify("Page(s) saved.")})},moveNodes:function(e){var t=this.getSelected();t.forEach(function(t){t.menu=e}),this.Nodes.save({id:"bulk"},{nodes:t}).then(function(){this.load(),this.$notify(this.$trans("Pages moved to %menu%.",{menu:_.find(this.menus.concat({id:"trash",label:this.$trans("Trash")}),"id",e).label}))})},removeNodes:function(){if("trash"!==this.menu.id){var e=this.getSelected();e.forEach(function(e){e.status=0}),this.moveNodes("trash")}else this.Nodes["delete"]({id:"bulk"},{ids:this.selected}).then(function(){this.load(),this.$notify("Page(s) deleted.")})},getType:function(e){return _.find(this.types,"id",e.type)},getSelected:function(){return this.nodes.filter(function(e){return this.isSelected(e)},this)},isSelected:function(e,t){return _.isArray(e)?_.every(e,function(e){return this.isSelected(e,t)},this):-1!==this.selected.indexOf(e.id)&&(!t||!this.tree[e.id]||this.isSelected(this.tree[e.id],!0))},toggleSelect:function(e){var t=this.selected.indexOf(e.id);-1==t?this.selected.push(e.id):this.selected.splice(t,1)}},computed:{showDelete:function(){return this.showMove&&_.every(this.getSelected(),function(e){return!(this.getType(e)||{})["protected"]},this)},showMove:function(){return this.isSelected(this.getSelected(),!0)}},watch:{"menu + nodes":{handler:function(){this.$set("tree",_(this.nodes).filter({menu:this.menu.id}).sortBy("priority").groupBy("parent_id").value())},deep:!0}},filters:{label:function(e){return _.result(_.find(this.menus,"id",e),"label")},"protected":function(e){return _.reject(e,"protected",!0)},trash:function(e){return _.reject(e,"id","trash")},divided:function(e){return _.reject(e,"fixed",!0).concat({divider:!0},_.filter(e,"fixed",!0))}},components:{node:{name:"node",props:["node","tree"],template:"#node",computed:{isFrontpage:function(){return"/"===this.node.url},type:function(){return this.$root.getType(this.node)||{}}},methods:{setFrontpage:function(){this.$root.Nodes.save({id:"frontpage"},{id:this.node.id},function(){this.$root.load(),this.$notify("Frontpage updated.")})},toggleStatus:function(){this.node.status=1===this.node.status?0:1,this.$root.Nodes.save({id:this.node.id},{node:this.node}).then(function(){this.$root.load(),this.$notify("Page saved.")})}}}}},Vue.ready(e.exports)}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+
+
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports) {
+
+	module.exports = {
+
+	    el: '#site',
+
+	    data: function () {
+	        return _.merge({
+	            edit: undefined,
+	            menu: this.$session.get('site.menu', {}),
+	            menus: [],
+	            nodes: [],
+	            tree: false,
+	            selected: []
+	        }, window.$data);
+	    },
+
+	    created: function () {
+	        this.Menus = this.$resource('api/site/menu{/id}');
+	        this.Nodes = this.$resource('api/site/node{/id}');
+
+	        var vm = this;
+	        this.load().then(function () {
+	            vm.$set('menu', _.find(vm.menus, 'id', vm.$get('menu.id')) || vm.menus[0]);
+	        });
+	    },
+
+	    ready: function () {
+
+	        var vm = this;
+
+	        UIkit.nestable(this.$els.nestable, {
+	            maxDepth: 20,
+	            group: 'site.nodes'
+	        }).on('change.uk.nestable', function (e, nestable, el, type) {
+
+	            if (type && type !== 'removed') {
+
+	                vm.Nodes.save({id: 'updateOrder'}, {
+	                    menu: vm.menu.id,
+	                    nodes: nestable.list()
+	                }).then(vm.load, function () {
+	                    this.$notify('Reorder failed.', 'danger');
+	                });
+	            }
+	        });
+
+	    },
+
+	    methods: {
+
+	        load: function () {
+
+	            var vm = this;
+	            return Vue.Promise.all([
+	                this.Menus.query(),
+	                this.Nodes.query()
+	            ]).then(function (responses) {
+
+	                vm.$set('menus', responses[0].data);
+	                vm.$set('nodes', responses[1].data);
+	                vm.$set('selected', []);
+
+	                if (!_.find(vm.menus, 'id', vm.$get('menu.id'))) {
+	                    vm.$set('menu', vm.menus[0]);
+	                }
+
+	            }, function () {
+	                vm.$notify('Loading failed.', 'danger');
+	            });
+	        },
+
+	        isActive: function (menu) {
+	            return this.menu && this.menu.id === menu.id;
+	        },
+
+	        selectMenu: function (menu) {
+
+	            this.$set('selected', []);
+	            this.$set('menu', menu);
+	            this.$session.set('site.menu', menu);
+
+	        },
+
+	        removeMenu: function (menu) {
+	            this.Menus.delete({id: menu.id}).finally(this.load);
+	        },
+
+	        editMenu: function (menu) {
+
+	            if (!menu) {
+	                menu = {
+	                    id: '',
+	                    label: ''
+	                };
+	            }
+
+	            this.$set('edit', _.merge({positions: []}, menu));
+
+	            this.$refs.modal.open();
+	        },
+
+	        saveMenu: function (menu) {
+
+	            this.Menus.save({menu: menu}).then(this.load, function (res) {
+	                this.$notify(res.data, 'danger');
+	            });
+
+	            this.cancel();
+	        },
+
+	        getMenu: function (position) {
+	            return _.find(this.menus, function (menu) {
+	                return _.contains(menu.positions, position);
+	            });
+	        },
+
+	        cancel: function () {
+	            this.$refs.modal.close();
+	        },
+
+	        status: function (status) {
+
+	            var nodes = this.getSelected();
+
+	            nodes.forEach(function (node) {
+	                node.status = status;
+	            });
+
+	            this.Nodes.save({id: 'bulk'}, {nodes: nodes}).then(function () {
+	                this.load();
+	                this.$notify('Page(s) saved.');
+	            });
+	        },
+
+	        moveNodes: function (menu) {
+
+	            var nodes = this.getSelected();
+
+	            nodes.forEach(function (node) {
+	                node.menu = menu;
+	            });
+
+	            this.Nodes.save({id: 'bulk'}, {nodes: nodes}).then(function () {
+	                this.load();
+	                this.$notify(this.$trans('Pages moved to %menu%.', {
+	                    menu: _.find(this.menus.concat({
+	                        id: 'trash',
+	                        label: this.$trans('Trash')
+	                    }), 'id', menu).label
+	                }));
+	            });
+	        },
+
+	        removeNodes: function () {
+
+	            if (this.menu.id !== 'trash') {
+
+	                var nodes = this.getSelected();
+
+	                nodes.forEach(function (node) {
+	                    node.status = 0;
+	                });
+
+	                this.moveNodes('trash');
+
+	            } else {
+	                this.Nodes.delete({id: 'bulk'}, {ids: this.selected}).then(function () {
+	                    this.load();
+	                    this.$notify('Page(s) deleted.');
+	                });
+	            }
+	        },
+
+	        getType: function (node) {
+	            return _.find(this.types, 'id', node.type);
+	        },
+
+	        getSelected: function () {
+	            return this.nodes.filter(function (node) {
+	                return this.isSelected(node);
+	            }, this);
+	        },
+
+	        isSelected: function (node, children) {
+
+	            if (_.isArray(node)) {
+	                return _.every(node, function (node) {
+	                    return this.isSelected(node, children);
+	                }, this);
+	            }
+
+	            return this.selected.indexOf(node.id) !== -1 && (!children || !this.tree[node.id] || this.isSelected(this.tree[node.id], true));
+	        },
+
+	        toggleSelect: function (node) {
+
+	            var index = this.selected.indexOf(node.id);
+
+	            if (index == -1) {
+	                this.selected.push(node.id);
+	            } else {
+	                this.selected.splice(index, 1);
+	            }
+	        }
+
+	    },
+
+	    computed: {
+
+	        showDelete: function () {
+	            return this.showMove && _.every(this.getSelected(), function (node) {
+	                    return !(this.getType(node) || {})['protected'];
+	                }, this);
+	        },
+
+	        showMove: function () {
+	            return this.isSelected(this.getSelected(), true);
+	        }
+
+	    },
+
+	    watch: {
+
+	        'menu + nodes': {
+	            handler: function () {
+	                this.$set('tree', _(this.nodes).filter({menu: this.menu.id}).sortBy('priority').groupBy('parent_id').value());
+	            },
+	            deep: true
+	        }
+
+	    },
+
+	    filters: {
+
+	        label: function (id) {
+	            return _.result(_.find(this.menus, 'id', id), 'label');
+	        },
+
+	        protected: function (types) {
+	            return _.reject(types, 'protected', true);
+	        },
+
+	        trash: function (menus) {
+	            return _.reject(menus, 'id', 'trash');
+	        },
+
+	        divided: function (menus) {
+	            return _.reject(menus, 'fixed', true).concat({divider: true}, _.filter(menus, 'fixed', true))
+	        }
+
+	    },
+
+	    components: {
+
+	        node: {
+
+	            name: 'node',
+	            props: ['node', 'tree'],
+	            template: '#node',
+
+	            computed: {
+
+	                isFrontpage: function () {
+	                    return this.node.url === '/';
+	                },
+
+	                type: function () {
+	                    return this.$root.getType(this.node) || {};
+	                }
+
+	            },
+
+	            methods: {
+
+	                setFrontpage: function () {
+	                    this.$root.Nodes.save({id: 'frontpage'}, {id: this.node.id}, function () {
+	                        this.$root.load();
+	                        this.$notify('Frontpage updated.');
+	                    });
+	                },
+
+	                toggleStatus: function () {
+
+	                    this.node.status = this.node.status === 1 ? 0 : 1;
+
+	                    this.$root.Nodes.save({id: this.node.id}, {node: this.node}).then(function () {
+	                        this.$root.load();
+	                        this.$notify('Page saved.');
+	                    });
+	                }
+	            }
+	        }
+
+	    }
+
+	};
+
+	Vue.ready(module.exports);
+
+
+/***/ }
+/******/ ]);

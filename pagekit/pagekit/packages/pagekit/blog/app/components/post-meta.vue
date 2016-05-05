@@ -8,6 +8,12 @@
                 <input id="form-meta-title" class="uk-form-width-large" type="text" v-model="post.data.meta['og:title']">
             </div>
         </div>
+        <div class="uk-form-row">
+            <label for="form-meta-title" class="uk-form-label">{{ 'Test' | trans }}</label>
+            <div class="uk-form-controls">
+                <input id="form-meta-title" class="uk-form-width-large" type="text" v-model="post.data.meta['og:test']">
+            </div>
+        </div>
 
         <div class="uk-form-row">
             <label for="form-meta-description" class="uk-form-label">{{ 'Description' | trans }}</label>

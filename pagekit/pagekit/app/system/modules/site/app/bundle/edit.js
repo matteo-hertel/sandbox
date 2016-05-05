@@ -1,1 +1,315 @@
-!function(t){function e(s){if(o[s])return o[s].exports;var i=o[s]={exports:{},id:s,loaded:!1};return t[s].call(i.exports,i,i.exports,e),i.loaded=!0,i.exports}var o={};return e.m=t,e.c=o,e.p="",e(0)}({0:function(t,e,o){window.Site={el:"#site-edit",data:function(){return _.merge({sections:[],form:{},active:0},window.$data)},created:function(){var t,e=[],o=_.kebabCase(this.type.id);_.forIn(this.$options.components,function(t,o){var s=t.options||{};s.section&&e.push(_.extend({name:o,priority:0},s.section))}),e=_.sortBy(e.filter(function(s){return t=s.name.match("(.+):(.+)"),null===t?!_.find(e,{name:o+":"+s.name}):t[1]==o},this),"priority"),this.$set("sections",e)},ready:function(){var t=this;this.Nodes=this.$resource("api/site/node{/id}"),this.tab=UIkit.tab(this.$els.tab,{connect:this.$els.content}),this.tab.on("change.uk.tab",function(e,o){t.active=o.index()}),this.$watch("active",function(t){this.tab.switcher.show(t)}),this.$state("active")},computed:{path:function(){return(this.node.path?this.node.path.split("/").slice(0,-1).join("/"):"")+"/"+(this.node.slug||"")}},methods:{save:function(){var t={node:this.node};this.$broadcast("save",t),this.Nodes.save({id:this.node.id},t).then(function(t){var e=t.data;this.node.id||window.history.replaceState({},"",this.$url.route("admin/site/page/edit",{id:e.node.id})),this.$set("node",e.node),this.$notify(this.$trans("%type% saved.",{type:this.type.label}))},function(t){this.$notify(t.data,"danger")})}},partials:{settings:o(14)},components:{settings:o(29),"link:settings":o(28)}},Vue.ready(window.Site)},4:function(t,e){"use strict";t.exports={section:{label:"Settings",priority:0,active:"link"},props:["node","roles","form"],created:function(){this.$options.partials=this.$parent.$options.partials,"redirect"===this.behavior&&(this.node.link=this.node.data.redirect),this.node.id||(this.node.status=1)},computed:{behavior:{get:function(){return this.node.data.alias?"alias":this.node.data.redirect?"redirect":"link"},set:function(t){this.$set("node.data",_.extend(this.node.data,{alias:"alias"===t,redirect:"redirect"===t?this.node.link:!1}))}}},events:{save:function(){"redirect"===this.behavior&&(this.node.data.redirect=this.node.link)}}}},7:function(t,e){"use strict";t.exports={props:["node","roles"],section:{label:"Settings"},created:function(){this.$options.partials.settings=this.$root.$options.partials.settings}}},14:function(t,e){t.exports="<div class=uk-form-row> <label for=form-menu-title class=uk-form-label>{{ 'Menu Title' | trans }}</label> <div class=uk-form-controls> <input id=form-menu-title class=uk-form-width-large type=text name=title v-model=node.title v-validate:required> <div class=\"uk-form-help-block uk-text-danger\" v-show=form.title.invalid>{{ 'Invalid name.' | trans }}</div> </div> </div> <div class=uk-form-row> <label for=form-slug class=uk-form-label>{{ 'Slug' | trans }}</label> <div class=uk-form-controls> <input id=form-slug class=uk-form-width-large type=text v-model=node.slug> </div> </div> <div class=uk-form-row> <label for=form-status class=uk-form-label>{{ 'Status' | trans }}</label> <div class=uk-form-controls> <select id=form-status class=uk-form-width-large v-model=node.status> <option value=0>{{ 'Disabled' | trans }}</option> <option value=1>{{ 'Enabled' | trans }}</option> </select> </div> </div> <div class=uk-form-row> <span class=uk-form-label>{{ 'Restrict Access' | trans }}</span> <div class=\"uk-form-controls uk-form-controls-text\"> <p v-for=\"role in roles\" class=uk-form-controls-condensed> <label><input type=checkbox :value=role.id v-model=node.roles number> {{ role.name }}</label> </p> </div> </div> <div class=uk-form-row> <span class=uk-form-label>{{ 'Menu' | trans }}</span> <div class=\"uk-form-controls uk-form-controls-text\"> <label><input type=checkbox value=center-content v-model=node.data.menu_hide> {{ 'Hide in menu' | trans }}</label> </div> </div>"},18:function(t,e){t.exports="<div class=uk-form-horizontal> <div class=uk-form-row> <label for=form-url class=uk-form-label>{{ 'Url' | trans }}</label> <div class=uk-form-controls> <input-link id=form-url class=uk-form-width-large name=link :link.sync=node.link required></input-link> <div class=\"uk-form-help-block uk-text-danger\" v-show=form.link.invalid>{{ 'Invalid url.' | trans }}</div> </div> </div> <div class=uk-form-row> <label for=form-type class=uk-form-label>{{ 'Type' | trans }}</label> <div class=uk-form-controls> <select id=form-type class=uk-form-width-large v-model=behavior> <option value=link>{{ 'Link' | trans }}</option> <option value=alias>{{ 'URL Alias' | trans }}</option> <option value=redirect>{{ 'Redirect' | trans }}</option> </select> </div> </div> <partial name=settings></partial> </div>"},21:function(t,e){t.exports="<div class=uk-form-horizontal> <partial name=settings></partial> </div>"},28:function(t,e,o){var s,i;s=o(4),i=o(18),t.exports=s||{},t.exports.__esModule&&(t.exports=t.exports["default"]),i&&(("function"==typeof t.exports?t.exports.options||(t.exports.options={}):t.exports).template=i)},29:function(t,e,o){var s,i;s=o(7),i=o(21),t.exports=s||{},t.exports.__esModule&&(t.exports=t.exports["default"]),i&&(("function"==typeof t.exports?t.exports.options||(t.exports.options={}):t.exports).template=i)}});
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+
+
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
+
+	window.Site = {
+
+	    el: '#site-edit',
+
+	    data: function () {
+	        return _.merge({sections: [], form: {}, active: 0}, window.$data);
+	    },
+
+	    created: function () {
+
+	        var sections = [], type = _.kebabCase(this.type.id), active;
+
+	        _.forIn(this.$options.components, function (component, name) {
+
+	            var options = component.options || {};
+
+	            if (options.section) {
+	                sections.push(_.extend({name: name, priority: 0}, options.section));
+	            }
+
+	        });
+
+	        sections = _.sortBy(sections.filter(function (section) {
+
+	            active = section.name.match('(.+):(.+)');
+
+	            if (active === null) {
+	                return !_.find(sections, {name: type + ':' + section.name});
+	            }
+
+	            return active[1] == type;
+	        }, this), 'priority');
+
+	        this.$set('sections', sections);
+
+	    },
+
+	    ready: function () {
+
+	        var vm = this;
+
+	        this.Nodes = this.$resource('api/site/node{/id}');
+	        this.tab = UIkit.tab(this.$els.tab, {connect: this.$els.content});
+
+	        this.tab.on('change.uk.tab', function (tab, current) {
+	            vm.active = current.index();
+	        });
+
+	        this.$watch('active', function (active) {
+	            this.tab.switcher.show(active);
+	        });
+
+	        this.$state('active');
+
+	    },
+
+	    computed: {
+
+	        path: function () {
+	            return (this.node.path ? this.node.path.split('/').slice(0, -1).join('/') : '') + '/' + (this.node.slug || '');
+	        }
+
+	    },
+
+	    methods: {
+
+	        save: function () {
+	            var data = {node: this.node};
+
+	            this.$broadcast('save', data);
+
+	            this.Nodes.save({id: this.node.id}, data).then(function (res) {
+	                    var data = res.data;
+	                    if (!this.node.id) {
+	                        window.history.replaceState({}, '', this.$url.route('admin/site/page/edit', {id: data.node.id}));
+	                    }
+
+	                    this.$set('node', data.node);
+
+	                    this.$notify(this.$trans('%type% saved.', {type: this.type.label}));
+
+	                }, function (res) {
+	                    this.$notify(res.data, 'danger');
+	                }
+	            );
+	        }
+
+	    },
+
+	    partials: {
+
+	        settings: __webpack_require__(1)
+
+	    },
+
+	    components: {
+
+	        'settings': __webpack_require__(2),
+	        'link:settings': __webpack_require__(5)
+
+	    }
+
+	};
+
+	Vue.ready(window.Site);
+
+
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"uk-form-row\">\n    <label for=\"form-menu-title\" class=\"uk-form-label\">{{ 'Menu Title' | trans }}</label>\n    <div class=\"uk-form-controls\">\n        <input id=\"form-menu-title\" class=\"uk-form-width-large\" type=\"text\" name=\"title\" v-model=\"node.title\" v-validate:required>\n        <div class=\"uk-form-help-block uk-text-danger\" v-show=\"form.title.invalid\">{{ 'Invalid name.' | trans }}</div>\n    </div>\n</div>\n\n<div class=\"uk-form-row\">\n    <label for=\"form-slug\" class=\"uk-form-label\">{{ 'Slug' | trans }}</label>\n    <div class=\"uk-form-controls\">\n        <input id=\"form-slug\" class=\"uk-form-width-large\" type=\"text\" v-model=\"node.slug\">\n    </div>\n</div>\n\n<div class=\"uk-form-row\">\n    <label for=\"form-status\" class=\"uk-form-label\">{{ 'Status' | trans }}</label>\n    <div class=\"uk-form-controls\">\n        <select id=\"form-status\" class=\"uk-form-width-large\" v-model=\"node.status\">\n            <option value=\"0\">{{ 'Disabled' | trans }}</option>\n            <option value=\"1\">{{ 'Enabled' | trans }}</option>\n        </select>\n    </div>\n</div>\n\n<div class=\"uk-form-row\">\n    <span class=\"uk-form-label\">{{ 'Restrict Access' | trans }}</span>\n    <div class=\"uk-form-controls uk-form-controls-text\">\n        <p v-for=\"role in roles\" class=\"uk-form-controls-condensed\">\n            <label><input type=\"checkbox\" :value=\"role.id\" v-model=\"node.roles\" number> {{ role.name }}</label>\n        </p>\n    </div>\n</div>\n\n<div class=\"uk-form-row\">\n    <span class=\"uk-form-label\">{{ 'Menu' | trans }}</span>\n    <div class=\"uk-form-controls uk-form-controls-text\">\n        <label><input type=\"checkbox\" value=\"center-content\" v-model=\"node.data.menu_hide\"> {{ 'Hide in menu' | trans }}</label>\n    </div>\n</div>\n";
+
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__vue_script__ = __webpack_require__(3)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] app\\system\\modules\\site\\app\\components\\node-settings.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(4)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "C:\\Users\\Matteo\\Desktop\\Code\\publicsandbox\\pagekit\\pagekit\\app\\system\\modules\\site\\app\\components\\node-settings.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = {
+
+	    props: ['node', 'roles'],
+
+	    section: {
+	        label: 'Settings'
+	    },
+
+	    created: function created() {
+	        this.$options.partials.settings = this.$root.$options.partials.settings;
+	    }
+
+	};
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	module.exports = "\n\n<div class=\"uk-form-horizontal\">\n    <partial name=\"settings\"></partial>\n</div>\n\n";
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__vue_script__ = __webpack_require__(6)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] app\\system\\modules\\site\\app\\components\\node-link.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(7)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "C:\\Users\\Matteo\\Desktop\\Code\\publicsandbox\\pagekit\\pagekit\\app\\system\\modules\\site\\app\\components\\node-link.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = {
+
+	    section: {
+	        label: 'Settings',
+	        priority: 0,
+	        active: 'link'
+	    },
+
+	    props: ['node', 'roles', 'form'],
+
+	    created: function created() {
+
+	        this.$options.partials = this.$parent.$options.partials;
+
+	        if (this.behavior === 'redirect') {
+	            this.node.link = this.node.data.redirect;
+	        }
+
+	        if (!this.node.id) {
+	            this.node.status = 1;
+	        }
+	    },
+
+	    computed: {
+
+	        behavior: {
+
+	            get: function get() {
+	                if (this.node.data.alias) {
+	                    return 'alias';
+	                } else if (this.node.data.redirect) {
+	                    return 'redirect';
+	                }
+
+	                return 'link';
+	            },
+
+	            set: function set(type) {
+	                this.$set('node.data', _.extend(this.node.data, {
+	                    alias: type === 'alias',
+	                    redirect: type === 'redirect' ? this.node.link : false
+	                }));
+	            }
+
+	        }
+
+	    },
+
+	    events: {
+
+	        save: function save() {
+	            if (this.behavior === 'redirect') {
+	                this.node.data.redirect = this.node.link;
+	            }
+	        }
+
+	    }
+
+	};
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	module.exports = "\n\n<div class=\"uk-form-horizontal\">\n\n    <div class=\"uk-form-row\">\n        <label for=\"form-url\" class=\"uk-form-label\">{{ 'Url' | trans }}</label>\n        <div class=\"uk-form-controls\">\n            <input-link id=\"form-url\" class=\"uk-form-width-large\" name=\"link\" :link.sync=\"node.link\" required></input-link>\n            <div class=\"uk-form-help-block uk-text-danger\" v-show=\"form.link.invalid\">{{ 'Invalid url.' | trans }}</div>\n        </div>\n    </div>\n\n    <div class=\"uk-form-row\">\n        <label for=\"form-type\" class=\"uk-form-label\">{{ 'Type' | trans }}</label>\n\n        <div class=\"uk-form-controls\">\n            <select id=\"form-type\" class=\"uk-form-width-large\" v-model=\"behavior\">\n                <option value=\"link\">{{ 'Link' | trans }}</option>\n                <option value=\"alias\">{{ 'URL Alias' | trans }}</option>\n                <option value=\"redirect\">{{ 'Redirect' | trans }}</option>\n            </select>\n        </div>\n    </div>\n\n    <partial name=\"settings\"></partial>\n\n</div>\n\n";
+
+/***/ }
+/******/ ]);
