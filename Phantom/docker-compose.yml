@@ -1,4 +1,6 @@
 phantom:
-    build : .
+    image: rosenhouse/phantomjs2
     volumes:
-        - ./output:/var/data
+        - ./output:/var/data/output
+        - ./scripts:/home
+    command: [ls, -ls, /home]
