@@ -1,5 +1,6 @@
 WEBSITE=$1;
 
+
 if [ -z "$WEBSITE" ] ; then
     echo "please provide a website e.g. https://example.com"
     exit
@@ -35,6 +36,6 @@ do
    :
     FILENAME=$(echo $i | sed "s/\*//")
 
-    phantomjs ./screenshot.js $WEBSITE ./output/phantom/$FILE/$FILENAME.png $i
-    echo "$FILE-$FILENAME.png";
+    phantomjs ./handlers/screenshot.js $WEBSITE ./output/phantom/$FILE/$FILENAME.png $i
+    echo  $FILE/$FILENAME.png
 done
