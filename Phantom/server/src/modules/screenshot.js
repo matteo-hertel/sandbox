@@ -4,7 +4,7 @@ var eventEmitter;
 var exports = module.exports = {};
 exports.setEmitter = function(emitter) {
     eventEmitter = emitter;
-}
+};
 exports.screenshot = function(url, output, dimensions) {
     var path = require('path');
     var childProcess = require('child_process');

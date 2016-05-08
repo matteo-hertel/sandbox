@@ -10,8 +10,7 @@ const Hapi = require("hapi");
 const server = new Hapi.Server();
 //set up connection
 server.connection({
-    host: "localhost",
-    port: 8080
+    port: 80
 });
 
 
