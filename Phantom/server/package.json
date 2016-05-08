@@ -1,0 +1,6 @@
+{
+    "dependencies": {
+        "phantom": "^2.1.1",
+        "hapi": "^13.0.0"
+    }
+}
