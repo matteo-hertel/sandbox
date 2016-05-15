@@ -1,9 +1,25 @@
 var elixir = require('laravel-elixir');
 
+require('laravel-elixir-vueify');
+
 elixir(function(mix) {
     mix.sass([
-        './bower_components/bootstrap/dist/css/bootstrap.css',
-        './bower_components/bootstrap/dist/css/bootstrap-theme.css',
+        './node_modules/bootstrap/dist/css/bootstrap.css',
+        './node_modules/bootstrap/dist/css/bootstrap-theme.css',
     ], "./app/assets/css/app.css");
-    mix.copy("./bower_components/bootstrap/dist/fonts", "./app/assets/fonts");
+
+    mix.copy("./node_modules/bootstrap/dist/fonts", "./app/assets/fonts");
+
+    mix.browserify("main.js", "./app/assets/js/app.js");
+    elixir(function(mix) {
+        mix.browserSync({
+            proxy: false,
+            files: "./app",
+            server: {
+                baseDir: "./app",
+                index: "index.html"
+            }
+
+        });
+    });
 });
