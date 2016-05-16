@@ -8,7 +8,8 @@ function Connection() {
     this.connection;
     this.server = "localhost";
     this.port = 8001;
-    this.output = [];
+    this.output = false;
+    this.emitter = false;
 }
 
 Connection.prototype.connect = function() {
@@ -30,6 +31,11 @@ Connection.prototype.establishConnection = function() {
         this.status = this.statuses[2];
     }
 };
+Connection.prototype.setEmitter = function(fn) {
+    if (typeof fn === "function") {
+        this.emitter = fn;
+    }
+};
 Connection.prototype.bindConnectionEvents = function() {
     this.connection.onclose = function() {
         this.status = this.statuses[1];
@@ -48,8 +54,10 @@ Connection.prototype.newMessage = function(payload) {
     if (typeof payload.data === "string") {
         data = JSON.parse(payload.data);
     }
+    if (this.emitter) {
+        this.emitter(data);
+    }
 
-    this.output.push(data.message);
 };
 Connection.prototype.getConnectionString = function() {
     return "ws://{server}:{port}".format({

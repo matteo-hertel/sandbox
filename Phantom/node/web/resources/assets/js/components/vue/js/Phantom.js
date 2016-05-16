@@ -6,6 +6,9 @@ export default {
             connection: new Connection(),
             connected: false,
             connectionClass: "",
+            started: {},
+            completed: {},
+            output: [],
             data: {
                 url: "https://www.google.co.uk"
             }
@@ -14,9 +17,13 @@ export default {
     methods: {
         connect() {
             this.connection.connect();
+            this.connection.setEmitter(this.emitter.bind(this));
         },
         send() {
             this.connection.send(this.data);
+        },
+        emitter(msg) {
+            this.output.push(msg);
         }
 
     },
@@ -40,6 +47,6 @@ export default {
 
             }
             return this.connection.status;
-        },
+        }
     }
 };
