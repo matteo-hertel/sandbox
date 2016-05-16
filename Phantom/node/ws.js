@@ -116,6 +116,7 @@ WSConnection.prototype.triggerProcess = function(data) {
     for (let i of dimensionGenerator(this.server.dimensions)) {
         this.emitter.emit("starting", {
             key: i.replace(/\*/g, ""),
+            status: "initializing",
             message: "started"
         });
         screen.screenshot(data.url, "./output/" + i.replace(/\*/g, "") + ".png", i);

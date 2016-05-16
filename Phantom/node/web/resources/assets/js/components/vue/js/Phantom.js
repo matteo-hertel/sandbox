@@ -6,8 +6,7 @@ export default {
             connection: new Connection(),
             connected: false,
             connectionClass: "",
-            started: {},
-            completed: {},
+            items: [],
             output: [],
             data: {
                 url: "https://www.google.co.uk"
@@ -22,8 +21,23 @@ export default {
         send() {
             this.connection.send(this.data);
         },
+        processMessage(msg) {
+            if (!msg.key) {
+                return;
+            }
+
+
+            this.items.push({
+                key: msg.key,
+                status: msg.status
+            });
+
+            // else {
+            //                 this.items[msg.key].status = msg.status;
+            //             }
+        },
         emitter(msg) {
-            this.output.push(msg);
+            this.processMessage(msg);
         }
 
     },

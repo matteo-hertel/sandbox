@@ -9,7 +9,7 @@
         {{connectionStatus}}
     </p>
 <pre>
-    {{output | json}}
+    {{items | json}}
 </pre>
 
 {{$data | json}}
