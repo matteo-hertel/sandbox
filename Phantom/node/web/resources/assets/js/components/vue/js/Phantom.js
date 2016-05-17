@@ -6,7 +6,9 @@ export default {
             connection: new Connection(),
             connected: false,
             connectionClass: "",
-            items: [],
+            started: [],
+            completed: [],
+            errors: [],
             output: [],
             data: {
                 url: "https://www.google.co.uk"
@@ -21,16 +23,35 @@ export default {
         send() {
             this.connection.send(this.data);
         },
+        checkKey(array, key) {
+            return array.filter(function(value) {
+                return value === key;
+            }).length;
+        },
+        deleteFromArray(array, key) {
+            let k = array.indexOf(key);
+            if (k !== -1) {
+                array.splice(k, 1);
+            }
+        },
         processMessage(msg) {
             if (!msg.key) {
                 return;
             }
 
+            switch (msg.status) {
+                case "initializing":
+                    this.started.push(msg.key);
+                    break;
+                case "success":
+                    this.deleteFromArray(this.started, msg.key);
+                    this.completed.push(msg.key);
+                    break;
 
-            this.items.push({
-                key: msg.key,
-                status: msg.status
-            });
+
+            }
+
+
 
             // else {
             //                 this.items[msg.key].status = msg.status;

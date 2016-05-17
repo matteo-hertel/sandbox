@@ -8,11 +8,21 @@
     <p class="{{connectionClass}}">
         {{connectionStatus}}
     </p>
-<pre>
-    {{items | json}}
-</pre>
+<spinner></spinner>
+<div class="col-md-6">
+    Started {{started.length}}
+    <div v-for="start in started">
+   {{ start }}
+ </div>
+</div>
+<div class="col-md-6">
+    Completed {{completed.length}}
+    <div v-for="complete in completed">
+   {{ complete }}
+ </div>
+</div>
+</div>
 
-{{$data | json}}
 </template>
 
 <script>
