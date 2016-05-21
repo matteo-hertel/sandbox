@@ -1,0 +1,122 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/app-layout/app-scrollpos-control/app-scrollpos-control.html">
+
+<link rel="import" href="./../main-content/main-content.html">
+
+<dom-module id="main-app">
+
+    <template>
+
+        <style>
+            .avatar-container {
+                position: relative;
+                border: 2px solid #00AA8D;
+                border-radius: 50%;
+                height: 90px;
+                padding: 2px;
+                width: 90px;
+                margin: 20px auto;
+            }
+
+            .avatar-container .image {
+                background-image: url('//assets-cdn.github.com/images/modules/logos_page/Octocat.png');
+                background-size: contain;
+                border-radius: 50%;
+                height: 100%;
+                width: 100%;
+            }
+
+            .contact-info {
+                margin: 0 20px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #CCC;
+                text-align: center;
+            }
+
+            .contact-info .name {
+                font-weight: bold;
+            }
+
+            .contact-info .email {
+                color: #999;
+            }
+
+            paper-item {
+                @apply(--layout-center-center);
+                height: 54px;
+            }
+
+            paper-icon-button {
+                --paper-icon-button-ink-color: white;
+            }
+        </style>
+
+
+        <app-drawer-layout responsive-width="1280px">
+
+            <!-- nav panel -->
+            <app-drawer id="drawer" swipe-open>
+                <app-header-layout has-scrolling-region>
+
+                    <app-header fixed>
+                        <div class="avatar-container">
+                            <div class="image"></div>
+                        </div>
+                        <div class="contact-info">
+                            <div class="name">Connection</div>
+                            <div class="email">connecting</div>
+                        </div>
+                    </app-header>
+
+                    <!-- nav menu -->
+                    <paper-listbox>
+                        <paper-item>Home</paper-item>
+                    </paper-listbox>
+
+                </app-header-layout>
+            </app-drawer>
+
+            <app-scrollpos-control></app-scrollpos-control>
+
+            <!-- list/detail pages -->
+            <iron-pages selected>
+
+                <main-content>
+                    <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+                </main-content>
+
+            </iron-pages>
+
+        </app-drawer-layout>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'main-app',
+
+            properties: {
+
+
+
+            }
+        });
+    </script>
+
+</dom-module>
