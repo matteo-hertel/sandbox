@@ -1,0 +1,82 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../../bower_components/app-layout/app-header/app-header.html">
+
+<dom-module id="connection-status">
+    <template>
+        <style>
+            .avatar-container {
+                position: relative;
+                border: 2px solid #00AA8D;
+                border-radius: 50%;
+                height: 90px;
+                padding: 2px;
+                width: 90px;
+                margin: 20px auto;
+            }
+
+            .avatar-container .image {
+                background-image: url('//assets-cdn.github.com/images/modules/logos_page/Octocat.png');
+                background-size: contain;
+                border-radius: 50%;
+                height: 100%;
+                width: 100%;
+            }
+
+            .connection-info {
+                margin: 0 20px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #CCC;
+                text-align: center;
+            }
+
+            .connection-info .name {
+                font-weight: bold;
+            }
+
+            .connection-info .status {
+                color: #999;
+            }
+
+            .connection-info .success {
+                color: #388E3C;
+            }
+
+            .connection-info .error,.disconnected {
+                color: #D32F2F;
+            }
+        </style>
+        <app-header fixed>
+            <div class="avatar-container">
+                <div class="image"></div>
+            </div>
+            <div class="connection-info">
+                <div class="name">Connection</div>
+                <p>
+                    [[formatStatus()]]
+                </p>
+                <div class$="[[status]]">{{formatStatus(status)}}</div>
+            </div>
+        </app-header>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: "connection-status",
+
+            properties: {
+                status: {
+                    type: String,
+                    value: "connecting",
+                }
+            },
+            formatStatus: function(status) {
+                if (status) {
+                    return status.charAt(0).toUpperCase() + status.slice(1);
+                }
+            }
+
+        });
+    </script>
+</dom-module>
