@@ -2,9 +2,10 @@
 
 <link rel="import" href="../../../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
-
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="./../connection-details/connection-details.html">
+<link rel="import" href="./../connection-status/connection-status.html">
 <dom-module id="ws-connection">
     <template>
         <style>
@@ -23,9 +24,11 @@
                 border: 1px solid #dedede;
             }
         </style>
+        <connection-status status="{{status}}" isConnected="{{isConnected}}"></connection-status>
         <div class="container">
-            <paper-input value="{{status}}"></paper-input>
-            <connection-details server="{{server}}" port="{{port}}"></connection-details>
+
+            <connection-details server="{{server}}" port="{{port}}">
+            </connection-details>
         </div>
     </template>
 
@@ -42,19 +45,31 @@
                     notify: true,
                     value: ""
                 },
+                isConnected: {
+                    type: Boolean,
+                    notify: true,
+                    value: !!this.connection
+                },
                 server: {
                     type: String,
                     notify: true,
-                    value: "localhost"
+                    value: "localhost",
+                    observer: '_disconnect'
                 },
                 port: {
                     type: Number,
                     notify: true,
-                    value: 8001
+                    value: 8001,
+                    observer: '_disconnect'
                 },
                 data: {
                     type: Object,
                     notify: true
+                }
+            },
+            _disconnect: function(newVal, oldVal) {
+                if (oldVal) {
+                    this.connection.close();
                 }
             },
             ready: function() {
@@ -83,6 +98,7 @@
             },
             bindConnectionEvents: function() {
                 this.connection.onclose = function() {
+                    this.connection = false;
                     this.status = this.statuses[1];
                 }.bind(this);
                 this.connection.onopen = function() {

@@ -1,20 +1,28 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
-
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../../bower_components/iron-collapse/iron-collapse.html">
 <dom-module id="connection-details">
     <template>
         <style>
             :host {
                 display: inline-block;
+                text-align: left;
+                width: 100%;
+            }
+
+            paper-icon-button {
+                display: inline-block;
+                color: black;
             }
         </style>
-        <button on-click="toggle">toggle collapse</button>
+        <h3><paper-icon-button icon="icons:create" on-click="toggle"></paper-icon-button> Server Connection</h3>
 
         <iron-collapse>
             <div class="collapse-content">
-                <div>Content goes here...</div>
+                <paper-input label="Server" always-float-label value="{{server}}"></paper-input>
+                <paper-input label="port" always-float-label value="{{port}}"></paper-input>
             </div>
         </iron-collapse>
         </div>
