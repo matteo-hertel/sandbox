@@ -2,7 +2,7 @@
 
 <link rel="import" href="../../../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+
 <link rel="import" href="../../../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="./../connection-details/connection-details.html">
 <link rel="import" href="./../connection-status/connection-status.html">
@@ -24,7 +24,7 @@
                 border: 1px solid #dedede;
             }
         </style>
-        <connection-status status="{{status}}" isConnected="{{isConnected}}"></connection-status>
+        <connection-status status="{{status}}" isConnected="{{isConnected}}" on-click="toggleConnection"></connection-status>
         <div class="container">
 
             <connection-details server="{{server}}" port="{{port}}">
@@ -69,12 +69,22 @@
             },
             _disconnect: function(newVal, oldVal) {
                 if (oldVal) {
-                    this.connection.close();
+                    if (this.connection) {
+
+                        this.connection.close();
+                    }
                 }
+            },
+            toggleConnection: function() {
+                if (this.isConnected) {
+                    this.connection.close();
+                    return;
+                }
+                this.connect();
             },
             ready: function() {
                 this.status = this.statuses[1];
-                this.connect();
+                //this.connect();
             },
 
             connect: function() {
@@ -99,12 +109,17 @@
             bindConnectionEvents: function() {
                 this.connection.onclose = function() {
                     this.connection = false;
-                    this.status = this.statuses[1];
+                    this.isConnected = false;
+                    if (this.status !== this.statuses[2]) {
+                        this.status = this.statuses[1];
+                    }
                 }.bind(this);
                 this.connection.onopen = function() {
+                    this.isConnected = true;
                     this.status = this.statuses[0];
                 }.bind(this);
                 this.connection.onerror = function() {
+                    this.isConnected = false;
                     this.status = this.statuses[2];
                 }.bind(this);
                 this.connection.onmessage = this.newMessage.bind(this);
