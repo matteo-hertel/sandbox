@@ -5,6 +5,7 @@
 <link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../../../bower_components/neon-animation/animations/scale-down-animation.html">
 <link rel="import" href="../../../bower_components/app-layout/app-header-layout/app-header-layout.html">
@@ -135,7 +136,7 @@
 
             <div class="content">
                 <paper-fab icon="icons:create" on-click="toggleDialog"></paper-fab>
-                <paper-card heading="Card Title" on-click="broadCastCreationIntent">
+                <paper-card heading="Card Title">
                     <div class="card-content">Some content</div>
                     <div class="card-actions">
                         <paper-button>Some action</paper-button>
@@ -143,13 +144,13 @@
                 </paper-card>
 
                 <paper-dialog exit-animation="scale-down-animation" entry-animation="scale-up-animation" id="dialog">
-                    <h2>Header</h2>
+                    <h2>Please select a URL</h2>
                     <paper-dialog-scrollable>
-                        Lorem ipsum...
+                        <paper-input label="Url" validator="url" always-float-label value="{{url}}"></paper-input>
                     </paper-dialog-scrollable>
                     <div class="buttons">
                         <paper-button dialog-dismiss>Cancel</paper-button>
-                        <paper-button dialog-confirm>Accept</paper-button>
+                        <paper-button dialog-confirm on-click="broadCastCreationIntent">Accept</paper-button>
                     </div>
                 </paper-dialog>
 
@@ -163,6 +164,12 @@
     <script>
         Polymer({
             mainApp: document.querySelector('main-app'),
+            properties: {
+                url: {
+                    type: String,
+                    value: "https://"
+                }
+            },
             is: 'main-content',
             toggleDialog: function() {
                 this.$.dialog.toggle();
@@ -170,7 +177,7 @@
             broadCastCreationIntent: function() {
                 this.mainApp.fire("creationIntent", {
                     data: {
-                        test: true
+                        url: this.url
                     }
                 })
             }
