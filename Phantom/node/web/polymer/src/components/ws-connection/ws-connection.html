@@ -34,7 +34,7 @@
 
     <script>
         Polymer({
-
+            mainApp: document.querySelector('main-app'),
             is: "ws-connection",
             statuses: ["connected", "disconnected", "error", "connecting"],
             connection: false,
@@ -84,9 +84,14 @@
             },
             ready: function() {
                 this.status = this.statuses[1];
-                //this.connect();
+                this.bindEvents();
             },
-
+            bindEvents: function() {
+                this.mainApp.addEventListener('creationIntent', this.handleEvents.bind(this))
+            },
+            handleEvents: function(e) {
+                console.log(e.detail, this);
+            },
             connect: function() {
                 this.status = this.statuses[3];
                 this.establishConnection();
