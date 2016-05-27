@@ -12,7 +12,7 @@
 <link rel="import" href="../../../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="../../../bower_components/app-layout/app-toolbar/app-toolbar.html">
-
+<link rel="import" href="./../request-dialog/request-dialog.html">
 <dom-module id="main-content">
     <template>
 
@@ -143,17 +143,7 @@
                     </div>
                 </paper-card>
 
-                <paper-dialog exit-animation="scale-down-animation" entry-animation="scale-up-animation" id="dialog">
-                    <h2>Please select a URL</h2>
-                    <paper-dialog-scrollable>
-                        <paper-input label="Url" validator="url" always-float-label value="{{url}}"></paper-input>
-                    </paper-dialog-scrollable>
-                    <div class="buttons">
-                        <paper-button dialog-dismiss>Cancel</paper-button>
-                        <paper-button dialog-confirm on-click="broadCastCreationIntent">Accept</paper-button>
-                    </div>
-                </paper-dialog>
-
+                <request-dialog></request-dialog>
 
             </div>
 
@@ -163,23 +153,10 @@
 
     <script>
         Polymer({
-            mainApp: document.querySelector('main-app'),
-            properties: {
-                url: {
-                    type: String,
-                    value: "https://"
-                }
-            },
             is: 'main-content',
             toggleDialog: function() {
-                this.$.dialog.toggle();
-            },
-            broadCastCreationIntent: function() {
-                this.mainApp.fire("creationIntent", {
-                    data: {
-                        url: this.url
-                    }
-                })
+
+                this.$.request - dialog.fire("toggleModal");
             }
 
         });

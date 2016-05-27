@@ -1,0 +1,54 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<dom-module id="request-dialog">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+        <paper-dialog exit-animation="scale-down-animation" entry-animation="scale-up-animation" id="dialog">
+            <h2>Please select a URL</h2>
+            <paper-dialog-scrollable>
+                <paper-input label="Url" validator="url" always-float-label value="{{url}}"></paper-input>
+            </paper-dialog-scrollable>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Cancel</paper-button>
+                <paper-button dialog-confirm on-click="broadCastCreationIntent">Accept</paper-button>
+            </div>
+        </paper-dialog>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: "request-dialog",
+            mainApp: document.querySelector('main-app'),
+            properties: {
+                url: {
+                    type: String,
+                    value: "https://"
+                }
+            },
+            listeners: {
+                toggleModal: "toggleModal"
+            },
+            toggleModal: function(e) {
+                this.$.dialog.toggle();
+            },
+            broadCastCreationIntent: function() {
+                this.mainApp.fire("creationIntent", {
+                    data: {
+                        url: this.url
+                    }
+                });
+                this.url = "";
+            }
+
+
+        });
+    </script>
+</dom-module>
