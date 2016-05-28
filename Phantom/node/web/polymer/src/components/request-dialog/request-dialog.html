@@ -28,7 +28,7 @@
         Polymer({
 
             is: "request-dialog",
-            mainApp: document.querySelector('main-app'),
+            connection: false,
             properties: {
                 url: {
                     type: String,
@@ -37,6 +37,9 @@
             },
             listeners: {
                 toggleModal: "toggleModal"
+            },
+            getConnectionElement: function() {
+                this.connection = document.querySelector('ws-connection');
             },
             toggleModal: function(e) {
                 this.$.dialog.toggle();
@@ -49,11 +52,18 @@
                 this.toggleModal();
             },
             broadCastCreationIntent: function() {
-                this.mainApp.fire("creationIntent", {
-                    data: {
-                        url: this.url
-                    }
-                });
+                if (!this.connection) {
+                    this.getConnectionElement();
+                }
+                try {
+                    this.connection.fire("creationIntent", {
+                        data: {
+                            url: this.url
+                        }
+                    });
+                } catch (exc) {
+                    console.warn(exc);
+                }
                 this.url = "";
             }
 
