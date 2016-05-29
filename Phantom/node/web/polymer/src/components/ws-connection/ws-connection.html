@@ -2,6 +2,7 @@
 
 <link rel="import" href="../../../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-toast/paper-toast.html">
 
 <link rel="import" href="../../../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="./../connection-details/connection-details.html">
@@ -23,6 +24,14 @@
                 padding: 15px;
                 border: 1px solid #dedede;
             }
+
+            paper-toast {
+                max-height: 100%;
+                max-width: 1834px;
+                position: fixed;
+                left: 10px;
+                bottom: 113px;
+            }
         </style>
         <connection-status status="{{status}}" isConnected="{{isConnected}}" on-click="toggleConnection"></connection-status>
         <div class="container">
@@ -30,6 +39,10 @@
             <connection-details server="{{server}}" port="{{port}}">
             </connection-details>
         </div>
+        <paper-toast id="toast1" duration="0" dynamicAlign opened text="This toast will stay opened until you close it, or open another toast.">
+            <paper-button onclick="toast1.toggle()" class="yellow-button">Close now!</paper-button>
+        </paper-toast>
+
     </template>
 
     <script>
@@ -38,6 +51,7 @@
             listeners: {
                 creationIntent: "creationIntent"
             },
+            toast: document.createElement("paper-toast"),
             statuses: ["connected", "disconnected", "error", "connecting"],
             connection: false,
             output: false,
@@ -86,19 +100,8 @@
             },
             ready: function() {
                 this.status = this.statuses[1];
-            },
-            creationIntent: function(e) {
-                try {
-                    var url = e.detail.data.url;
-                    if (!url) {
-                        return;
-
-                    }
-                    this.send(e.detail.data);
-                } catch (exc) {
-                    console.warn(exc)
-                }
-
+                this.appendToastTo(document.body);
+                this.buildToast();
             },
             connect: function() {
                 this.status = this.statuses[3];
@@ -137,7 +140,6 @@
                 }.bind(this);
                 this.connection.onmessage = this.newMessage.bind(this);
             },
-
             newMessage: function(payload) {
                 var data;
                 if (typeof payload.data === "string") {
@@ -149,7 +151,45 @@
             },
             getConnectionString: function() {
                 return "ws://" + this.server + ":" + this.port;
-            }
+            },
+
+            // Events Logic
+            creationIntent: function(e) {
+                if (!this.isConnected) {
+                    this.toast.show();
+                    return;
+                }
+                try {
+                    var url = e.detail.data.url;
+                    if (!url) {
+                        return;
+
+                    }
+                    this.send(e.detail.data);
+                } catch (exc) {
+                    console.warn(exc)
+                }
+
+            },
+            // Toast Logic
+            appendToastTo: function(el) {
+                if (!el instanceof HTMLElement) {
+                    return;
+                }
+                el.appendChild(this.toast);
+                this.toast.open();
+            },
+            buildToast: function() {
+                this.toast.id = "toast1";
+                this.toast.duration = "0";
+                this.toast.opened = false;
+                this.toast.dynamicAlign = true;
+                this.toast.text = "Yout are not connected to the server, click to dismiss";
+                this.toast.onclick = function() {
+                    this.toggle();
+                }
+            },
+
         });
     </script>
 </dom-module>
