@@ -1,0 +1,105 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="./../request-dialog/request-dialog.html">
+<dom-module id="server-output">
+    <template>
+
+        <style>
+            :host {
+                display: block;
+                position: relative;
+                max-width: 1000px;
+                margin: 5px auto;
+            }
+
+            paper-card {
+                display: block;
+                margin: 5px;
+                --paper-card-header-image: {
+                    height: 200px;
+                }
+            }
+
+            paper-card h2 {
+                margin: 4px;
+                font-weight: normal;
+            }
+
+            paper-card p {
+                margin: 4px;
+                color: #999;
+            }
+
+            paper-fab {
+                position: fixed;
+                right: 24px;
+                bottom: 24px;
+                --paper-fab-background: #EF5458;
+                --paper-fab-keyboard-focus-background: #DF4448;
+            }
+        </style>
+
+        <paper-fab style="bottom: 120px" icon="icons:add-circle" on-tap="createCard"></paper-fab>
+        <div class="cards">
+
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'server-output',
+            listeners: {
+                incomingData: "processData"
+            },
+            processData: function(e) {
+                try {
+                    var data = e.detail.data.serverData;
+                } catch (e) {
+                    console.warn(e);
+                    return;
+                }
+                switch (data.status) {
+                    case "initializing":
+                        this.createCard(data.key)
+                        break;
+                    case "success":
+                        this.updateCard(data.key)
+                        break;
+
+
+                }
+            },
+            createCard: function(id) {
+                var card = document.createElement("paper-card");
+                card.heading = id;
+                card.id = id;
+                this.setDefatultCardView(card);
+                Polymer.dom(this.querySelector(".cards")).appendChild(card);
+
+            },
+            updateCard: function(id) {
+                console.log(document.getElementById(id).querySelector(".card-content"));
+
+            },
+
+            setDefatultCardView: function(card) {
+                if (card.nodeName !== "PAPER-CARD") {
+                    return;
+                }
+                var spinner = document.createElement("paper-spinner");
+                spinner.active = true;
+                var container = document.createElement("div");
+                container.classList.add("card-content");
+                container.appendChild(spinner);
+                Polymer.dom(card).appendChild(container);
+            }
+
+        });
+    </script>
+</dom-module>

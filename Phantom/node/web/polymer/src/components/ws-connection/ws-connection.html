@@ -77,10 +77,6 @@
                     notify: true,
                     value: 8001,
                     observer: '_disconnect'
-                },
-                data: {
-                    type: Object,
-                    notify: true
                 }
             },
             _disconnect: function(newVal, oldVal) {
@@ -145,8 +141,7 @@
                 if (typeof payload.data === "string") {
                     data = JSON.parse(payload.data);
                 }
-                console.log(data);
-                this.data = data;
+                this.broadcastDataToOutput(data);
 
             },
             getConnectionString: function() {
@@ -170,6 +165,17 @@
                     console.warn(exc)
                 }
 
+            },
+            broadcastDataToOutput: function(data) {
+                if (!this.output) {
+                    this.output = document.querySelector("server-output");
+                }
+
+                this.output.fire("incomingData", {
+                    data: {
+                        serverData: data
+                    }
+                })
             },
             // Toast Logic
             appendToastTo: function(el) {
