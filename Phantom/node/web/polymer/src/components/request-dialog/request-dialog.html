@@ -15,12 +15,13 @@
             <form on-submit="formSubmit">
 
 
-                <paper-input label="Url" type="URL" always-float-label value="{{url}}" on-submit="formSubmit"></paper-input>
+                <paper-input label="Url" value="{{url}}" required auto-validate pattern="^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$" error-message="Please provide a valid url" on-submit="formSubmit"></paper-input>
+
+                <div class="buttons">
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button on-click="formSubmit">Generate Screenshots</paper-button>
+                </div>
             </form>
-            <div class="buttons">
-                <paper-button dialog-dismiss>Cancel</paper-button>
-                <paper-button dialog-confirm on-click="broadCastCreationIntent">Generate Screenshots</paper-button>
-            </div>
         </paper-dialog>
     </template>
 
@@ -48,8 +49,14 @@
                 if (e) {
                     e.preventDefault();
                 }
+                if (!this.validate()) {
+                    return;
+                }
                 this.broadCastCreationIntent();
                 this.toggleModal();
+            },
+            validate: function() {
+                return Polymer.dom(this).node.querySelector("paper-input").validate();
             },
             broadCastCreationIntent: function() {
                 if (!this.connection) {

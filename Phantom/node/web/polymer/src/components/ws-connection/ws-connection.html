@@ -36,7 +36,7 @@
         Polymer({
             is: "ws-connection",
             listeners: {
-                creationIntent: "handleEvents"
+                creationIntent: "creationIntent"
             },
             statuses: ["connected", "disconnected", "error", "connecting"],
             connection: false,
@@ -87,8 +87,18 @@
             ready: function() {
                 this.status = this.statuses[1];
             },
-            handleEvents: function(e) {
-                console.log(e.detail, this);
+            creationIntent: function(e) {
+                try {
+                    var url = e.detail.data.url;
+                    if (!url) {
+                        return;
+
+                    }
+                    this.send(e.detail.data);
+                } catch (exc) {
+                    console.warn(exc)
+                }
+
             },
             connect: function() {
                 this.status = this.statuses[3];
@@ -133,6 +143,7 @@
                 if (typeof payload.data === "string") {
                     data = JSON.parse(payload.data);
                 }
+                console.log(data);
                 this.data = data;
 
             },
