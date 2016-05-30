@@ -58,10 +58,11 @@
 
             .content {
                 display: block;
-                position: relative;
-                max-width: 1000px;
-                margin: 5px auto;
+                max-width: 70%;
+                margin: auto;
             }
+
+            .container {}
 
             paper-fab {
                 position: fixed;
@@ -71,18 +72,15 @@
                 --paper-fab-keyboard-focus-background: #DF4448;
             }
 
-            @media (max-width: 960px) {
-                .content {
-                    max-width: 800px;
-                }
-            }
-
-            @media (max-width: 719px) {
+            @media (max-width: 860px) {
                 app-toolbar {
                     height: 60px;
                 }
+            }
+
+            @media (max-width: 550px) {
                 .content {
-                    max-width: 400px;
+                    margin: 5px;
                 }
             }
         </style>

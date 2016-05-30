@@ -103,6 +103,7 @@ WSConnection.prototype.setServer = function(server) {
 };
 
 WSConnection.prototype.triggerProcess = function(data) {
+    const url = this.parseURL(data.url);
     const screen = require("./modules/screenshot");
 
     screen.setEmitter(this.emitter);
@@ -119,8 +120,15 @@ WSConnection.prototype.triggerProcess = function(data) {
             status: "initializing",
             message: "started"
         });
-        screen.screenshot(data.url, "./output/" + i.replace(/\*/g, "") + ".png", i);
+        screen.screenshot(data.url, "./web/polymer/output/" + url.hostname + "/" + i.replace(/\*/g, "") + ".png", i);
     }
+};
+
+WSConnection.prototype.parseURL = function(url) {
+    if (!this.urlParser) {
+        this.urlParser = require('url');
+    }
+    return this.urlParser.parse(url);
 };
 
 new WSServer();
