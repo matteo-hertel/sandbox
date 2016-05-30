@@ -108,7 +108,6 @@
                 if (typeof msg === "object") {
                     msg = JSON.stringify(msg);
                 }
-                console.log(msg);
                 this.connection.send(msg);
             },
             establishConnection: function() {

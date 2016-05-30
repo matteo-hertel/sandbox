@@ -5,6 +5,7 @@
 <link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
 
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
 
 <link rel="import" href="./../request-dialog/request-dialog.html">
 <dom-module id="server-output">
@@ -19,7 +20,9 @@
             }
 
             paper-card {
-                display: block;
+                display: inline-block;
+                min-width: 49%;
+                max-width: 50%;
                 margin: 5px;
                 --paper-card-header-image: {
                     height: 200px;
@@ -43,8 +46,30 @@
                 --paper-fab-background: #EF5458;
                 --paper-fab-keyboard-focus-background: #DF4448;
             }
-        </style>
 
+            iron-image {
+                width: 100%;
+                height: 350px;
+            }
+
+            @media (max-width: 960px) {
+                paper-card {
+                    display: block;
+                    min-width: 100%;
+                    max-height: 100%;
+                    margin: 30px;
+                }
+            }
+
+            @media (max-width: 719px) {
+                paper-card {
+                    display: block;
+                    min-width: 100%;
+                    max-height: 100%;
+                    margin: 5px;
+                }
+            }
+        </style>
         <paper-fab style="bottom: 120px" icon="icons:add-circle" on-tap="createCard"></paper-fab>
         <div class="cards">
 
@@ -69,7 +94,7 @@
                         this.createCard(data.key)
                         break;
                     case "success":
-                        this.updateCard(data.key)
+                        this.updateCard(data)
                         break;
 
 
@@ -83,11 +108,24 @@
                 Polymer.dom(this.querySelector(".cards")).appendChild(card);
 
             },
-            updateCard: function(id) {
-                console.log(document.getElementById(id).querySelector(".card-content"));
-
+            updateCard: function(data) {
+                var img = this.generateImage(data.message);
+                var content = document.getElementById(data.key).querySelector(".card-content");
+                while (content.firstChild) {
+                    content.removeChild(content.firstChild);
+                }
+                Polymer.dom(content).appendChild(img);
             },
-
+            generateImage: function(path) {
+                var a = document.createElement("a");
+                a.href = path.replace(/web\/polymer/, "").replace(/saved\./, "");
+                var img = document.createElement("iron-image");
+                img.style = "background-color: lightgray;";
+                img.sizing = "contain";
+                img.fade = true;
+                img.src = a.href;
+                return img;
+            },
             setDefatultCardView: function(card) {
                 if (card.nodeName !== "PAPER-CARD") {
                     return;
