@@ -148,6 +148,7 @@
             },
 
             // Events Logic
+
             creationIntent: function(e) {
                 if (!this.isConnected) {
                     this.toast.show();
@@ -159,7 +160,9 @@
                         return;
 
                     }
+                    this.broadcastNewProcess();
                     this.send(e.detail.data);
+
                 } catch (exc) {
                     console.warn(exc)
                 }
@@ -175,6 +178,13 @@
                         serverData: data
                     }
                 })
+            },
+            broadcastNewProcess: function() {
+                if (!this.output) {
+                    this.output = document.querySelector("server-output");
+                }
+
+                this.output.fire("newProcess");
             },
             // Toast Logic
             appendToastTo: function(el) {

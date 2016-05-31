@@ -50,7 +50,6 @@
                 }
             }
         </style>
-        <paper-fab style="bottom: 120px" icon="icons:add-circle" on-tap="createCard"></paper-fab>
         <div class="cards">
 
         </div>
@@ -60,7 +59,8 @@
         Polymer({
             is: 'server-output',
             listeners: {
-                incomingData: "processData"
+                incomingData: "processData",
+                newProcess: "clearDeck"
             },
             processData: function(e) {
                 try {
@@ -78,6 +78,12 @@
                         break;
 
 
+                }
+            },
+            clearDeck: function() {
+                var cards = this.querySelector(".cards");
+                while (cards.firstChild) {
+                    cards.removeChild(cards.firstChild);
                 }
             },
             createCard: function(id) {
