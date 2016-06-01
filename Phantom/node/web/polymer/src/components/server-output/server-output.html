@@ -91,6 +91,7 @@
                 card.heading = id;
                 card.id = id;
                 this.setDefatultCardView(card);
+
                 Polymer.dom(this.querySelector(".cards")).appendChild(card);
 
             },
@@ -100,7 +101,28 @@
                 while (content.firstChild) {
                     content.removeChild(content.firstChild);
                 }
-                Polymer.dom(content).appendChild(img);
+                this.buildFinalCard(content, img);
+            },
+            buildFinalCard: function(card, image) {
+                if (!card || !image) {
+                    return;
+                }
+                var content = document.createElement("div");
+                var actions = document.createElement("div");
+                var btn = document.createElement("paper-button");
+                btn.href = image.src;
+                btn.textContent = "Download";
+                btn.onclick = "testClick"
+                content.classList.add("card-content");
+                actions.classList.add("card-actions");
+                Polymer.dom(actions).appendChild(btn);
+
+
+                Polymer.dom(content).appendChild(image);
+                Polymer.dom(card).appendChild(content).appendChild(actions)
+            },
+            testClick: function() {
+                console.log(this);
             },
             generateImage: function(path) {
                 var a = document.createElement("a");
