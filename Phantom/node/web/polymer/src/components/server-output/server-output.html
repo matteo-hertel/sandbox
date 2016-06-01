@@ -109,10 +109,10 @@
                 }
                 var content = document.createElement("div");
                 var actions = document.createElement("div");
-                var btn = document.createElement("paper-button");
+                var btn = document.createElement("a");
                 btn.href = image.src;
                 btn.textContent = "Download";
-                btn.onclick = "testClick"
+                btn.download = card.id;
                 content.classList.add("card-content");
                 actions.classList.add("card-actions");
                 Polymer.dom(actions).appendChild(btn);
@@ -120,9 +120,6 @@
 
                 Polymer.dom(content).appendChild(image);
                 Polymer.dom(card).appendChild(content).appendChild(actions)
-            },
-            testClick: function() {
-                console.log(this);
             },
             generateImage: function(path) {
                 var a = document.createElement("a");
