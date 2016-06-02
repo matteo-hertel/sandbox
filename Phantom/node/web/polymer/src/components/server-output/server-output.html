@@ -50,7 +50,6 @@
                 }
             }
         </style>
-        <paper-fab style="bottom: 120px" icon="icons:add-circle" on-tap="createCard"></paper-fab>
         <div class="cards">
 
         </div>
@@ -60,7 +59,8 @@
         Polymer({
             is: 'server-output',
             listeners: {
-                incomingData: "processData"
+                incomingData: "processData",
+                newProcess: "clearDeck"
             },
             processData: function(e) {
                 try {
@@ -80,11 +80,18 @@
 
                 }
             },
+            clearDeck: function() {
+                var cards = this.querySelector(".cards");
+                while (cards.firstChild) {
+                    cards.removeChild(cards.firstChild);
+                }
+            },
             createCard: function(id) {
                 var card = document.createElement("paper-card");
                 card.heading = id;
                 card.id = id;
                 this.setDefatultCardView(card);
+
                 Polymer.dom(this.querySelector(".cards")).appendChild(card);
 
             },
@@ -94,7 +101,25 @@
                 while (content.firstChild) {
                     content.removeChild(content.firstChild);
                 }
-                Polymer.dom(content).appendChild(img);
+                this.buildFinalCard(content, img);
+            },
+            buildFinalCard: function(card, image) {
+                if (!card || !image) {
+                    return;
+                }
+                var content = document.createElement("div");
+                var actions = document.createElement("div");
+                var btn = document.createElement("a");
+                btn.href = image.src;
+                btn.textContent = "Download";
+                btn.download = card.id;
+                content.classList.add("card-content");
+                actions.classList.add("card-actions");
+                Polymer.dom(actions).appendChild(btn);
+
+
+                Polymer.dom(content).appendChild(image);
+                Polymer.dom(card).appendChild(content).appendChild(actions)
             },
             generateImage: function(path) {
                 var a = document.createElement("a");
