@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * get an integer as input (n) and print a 
+ * n levels pyramid to the terminal
+ */
+
 $len = (int)$argv[1];
 
 $out = [];
