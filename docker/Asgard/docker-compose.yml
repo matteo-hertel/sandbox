@@ -1,0 +1,50 @@
+cache:
+  image: redis
+
+database:
+  environment:
+    - MYSQL_ROOT_PASSWORD=SuperSecretPassword123
+    - MYSQL_DATABASE=laravel
+  image: mysql
+
+load_balancer:
+  image: tutum/haproxy
+  links:
+    - web
+  ports:
+    - "80:80"
+
+web:
+  build: .
+  environment:
+    - APP_ENV=production
+    - DB_HOST=database
+    - DB_DATABASE=laravel
+    - DB_USERNAME=root
+    - DB_PASSWORD=SuperSecretPassword123
+#    - VIRTUAL_HOST=dreamfactory.app
+
+  links:
+    - database
+    - cache
+  volumes:
+    - "./code:/var/www"
+
+# phpmyadmin:
+#   environment:
+#     - PMA_HOST=database
+#     - PMA_USER=root
+#     - PMA_PASSWORD=SuperSecretPassword123
+#   image: phpmyadmin/phpmyadmin
+#   links:
+#     - database
+#   ports:
+#     - "8080:80"
+
+# commander:
+#   image: higebu/redis-commander
+#   links:
+#     - cache
+#   ports:
+#     - "8081:8081"
+#   command: --redis-host cache
