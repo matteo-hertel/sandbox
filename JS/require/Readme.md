@@ -9,5 +9,5 @@
 ## Steps
 
 - run `bower install`
-- run `php -S localhost:8080 -t ./`
+- run `php -S localhost:8080 -t .`
 - open <http://localhost:8080/>
