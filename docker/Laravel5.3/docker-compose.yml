@@ -1,7 +1,0 @@
-laravel:
-  image: composer
-  volumes:
-    - "./code:/opt"
-  ports:
-    - "80:8080"
-  command: "php -S 0.0.0.0:8080 -t /opt/my-app/public"
