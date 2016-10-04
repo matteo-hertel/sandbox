@@ -10,12 +10,27 @@ class MouseEventsDemo {
 
     bindEvents() {
         this.box.on({
-            mouseup: this.debounce(this.mouseUp.bind(this), 250),
-            mousedown: this.debounce(this.mouseDown.bind(this), 250),
-            mousemove: this.debounce(this.mouseMove.bind(this), 250)
+            mouseup: this.debounce(this.mouseUp.bind(this), 50),
+            mousedown: this.debounce(this.mouseDown.bind(this), 50),
+            mousemove: this.debounce(this.mouseMove.bind(this), 50),
+            wheel: this.debounce(this.scroll.bind(this), 50)
         })
     }
+    scroll(e) {
+        if (!e) {
+            return;
+        }
+        var delta = e.originalEvent.deltaY;
 
+        if (delta > 0) {
+            this.console.log("Scrolling Down");
+        } else {
+            this.console.log("Scrolling Up");
+        }
+
+        return false;
+
+    }
     mouseUp() {
         this.console.log("Mouse Up");
     }
@@ -69,6 +84,7 @@ class Console {
 
     log(msg) {
         this.console.append($("<p>", {text: msg}));
+        this.console.get(0).scrollTop = this.console.get(0).scrollHeight
     }
 }
 new MouseEventsDemo($(".jumbotron"), $(".console"), $("#clearConsole"));
