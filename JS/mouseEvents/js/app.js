@@ -28,7 +28,10 @@ class MouseEventsDemo {
     mouseMove() {
         this.console.log("Mouse Move");
     }
-
+    /**
+     * As usual thanks to David Walsh for the debounce function
+     * https://davidwalsh.name/javascript-debounce-function
+     */
     debounce(func, wait, immediate) {
         var timeout;
         return function() {
