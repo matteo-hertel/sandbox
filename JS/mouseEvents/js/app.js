@@ -19,11 +19,14 @@ class MouseEventsDemo {
     mouseUp() {
         this.console.log("Mouse Up");
     }
-    mouseDown() {
-        this.console.log("Mouse Up");
+    mouseDown(e) {
+        if (e) {
+            e.preventDefault();
+        }
+        this.console.log("Mouse Down");
     }
     mouseMove() {
-        this.console.log("Mouse Up");
+        this.console.log("Mouse Move");
     }
 
     debounce(func, wait, immediate) {
@@ -65,4 +68,4 @@ class Console {
         this.console.append($("<p>", {text: msg}));
     }
 }
-console.log(new MouseEventsDemo($(".jumbotron"), $(".console"), $("#clearConsole")));
+new MouseEventsDemo($(".jumbotron"), $(".console"), $("#clearConsole"));
