@@ -1,89 +1,78 @@
+/* jshint esversion: 6 */
 'use strict';
 
-class MouseEventsDemo {
+class SpeechRecognitionDemo {
 
-    constructor($box, $console, $button) {
-        this.box = $box;
-        this.console = new Console($console, $button);
-        this.bindEvents();
+    constructor(button, output) {
+        this.button = button;
+        this.output = output;
+        this.defaults();
+        this.setUp();
+        this.bindDomEvents();
     }
 
-    bindEvents() {
-        this.box.on({
-            mouseup: this.debounce(this.mouseUp.bind(this), 50),
-            mousedown: this.debounce(this.mouseDown.bind(this), 50),
-            mousemove: this.debounce(this.mouseMove.bind(this), 50),
-            wheel: this.debounce(this.scroll.bind(this), 50)
-        })
+    defaults() {
+        this.recognition = new(webkitSpeechRecognition || mozSpeechRecognition || msSpeechRecognition || SpeechRecognition)();
+        this.messages = ["Listening...", "Start listening"];
     }
-    scroll(e) {
-        if (!e) {
-            return;
-        }
-        var delta = e.originalEvent.deltaY;
 
-        if (delta > 0) {
-            this.console.log("Scrolling Down");
-        } else {
-            this.console.log("Scrolling Up");
-        }
-
-        return false;
-
+    setUp() {
+        this.recognition.lang = 'en-GB';
+        this.recognition.interimResults = false;
+        this.recognition.maxAlternatives = 1;
+        this.bindAudioEvents();
     }
-    mouseUp() => this.console.log("Mouse Up");
 
-    mouseDown(e) {
-        if (e) {
-            e.preventDefault();
-        }
-        this.console.log("Mouse Down");
+    bindDomEvents() {
+        this.button.addEventListener("click", this.startListening.bind(this), false);
     }
-    mouseMove() {
-        this.console.log("Mouse Move");
+
+    startListening() {
+        this.recognition.start();
+        this.button.children[0].innerHTML = this.messages[0];
     }
-    /**
-     * As usual thanks to David Walsh for the debounce function
-     * https://davidwalsh.name/javascript-debounce-function
-     */
-    debounce(func, wait, immediate) {
-        var timeout;
-        return function() {
-            var context = this,
-                args = arguments;
-            var later = function() {
-                timeout = null;
-                if (!immediate)
-                    func.apply(context, args);
-                };
-            var callNow = immediate && !timeout;
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-            if (callNow)
-                func.apply(context, args);
-            };
-    };
+
+    bindAudioEvents() {
+        this.recognition.onresult = this.handleResult.bind(this);
+        this.recognition.onend = this.restoreButtonMessage.bind(this);
+    }
+    handleResult(e) {
+        this.output.addOutput(e.results[0][0].transcript);
+    }
+    restoreButtonMessage() {
+        this.button.children[0].innerHTML = this.messages[1];
+    }
+}
+class Output {
+    constructor(output) {
+        this.output = output;
+    }
+
+    clearOutput() {
+        this.output.innerHTML = "";
+    }
+    generateOutput(msg) {
+        var b = document.createElement("b");
+        b.innerHTML = `${Helpers.getDate()}: `;
+
+        var span = document.createElement("span");
+        span.innerHTML = msg;
+
+        var p = document.createElement("p");
+        p.appendChild(b);
+        p.appendChild(span);
+
+        return p;
+    }
+    addOutput(msg) {
+        this.output.appendChild(this.generateOutput(msg));
+    }
 
 }
 
-class Console {
-    constructor($console, $button) {
-        this.console = $console.find("pre");
-        this.clearButton = $button;
-        this.bindEvents();
-    }
-
-    bindEvents() {
-        this.clearButton.on("click", this.clearConsole.bind(this));
-    }
-
-    clearConsole() {
-        this.console.html("");
-    }
-
-    log(msg) {
-        this.console.append($("<p>", {text: msg}));
-        this.console.get(0).scrollTop = this.console.get(0).scrollHeight
+class Helpers {
+    static getDate() {
+        return new Date().toISOString();
     }
 }
-new MouseEventsDemo($(".jumbotron"), $(".console"), $("#clearConsole"));
+new SpeechRecognitionDemo(document.getElementById("startListening"), new Output(document.getElementById("audioOutput")));
