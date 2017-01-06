@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "node-zip": "^1.1.1",
+    "nodegit": "^0.16.0",
+    "recursive-readdir": "^2.1.0",
     "unzip": "^0.1.11"
   }
 }
