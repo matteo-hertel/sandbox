@@ -2,10 +2,10 @@ const git= require("./modules/git");
 const fileReader = require("./modules/fileReader");
 const markdown = require("./modules/markDownProcessor");
 
-read();
-return;
+// read();
+// return;
 
-git.clone("https://github.com/getify/You-Dont-Know-JS.git", "./tmp")
+git.clone("https://github.com/matteo-hertel/blog.git", "./tmp")
 .then((repo) => {
     read();
 })

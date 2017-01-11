@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "markdown:run": "rm -rf ./out && node index.js"
+    "markdown:run": "rm -rf ./out && node index.js",
+    "run": "rm -rf ./out ./tmp && node index.js"
   },
   "author": "",
   "license": "ISC",
