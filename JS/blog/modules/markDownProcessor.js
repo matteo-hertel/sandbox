@@ -9,9 +9,7 @@ const process = (files, folder) => {
 };
 
 const convert = (file, index) => {
-    this.file = file;
-
-    fs.readFile(this.file, 'utf8', function(err, data) {
+    fs.readFile(file, 'utf8', function(err, data) {
         if (err) throw err;
         var html;
         try {
@@ -19,14 +17,14 @@ const convert = (file, index) => {
         } catch (e) {
             html = "error";
         }
-        publish(html);
+        publish(html, file, this.folder);
     });
 };
 
-const publish= (html) => {
-    mkpath.sync(`./${this.folder}/${path.dirname(this.file)}`.replace(/ /g, "-"), 0700);
+const publish= (html, file, folder) => {
+    mkpath.sync(`./${this.folder}/${path.dirname(file)}`.replace(/ /g, "-"), 0700);
 
-    fs.writeFile(`./${this.folder}/${this.file}.html`.replace(/ /g, "-"),  html, function(err) {
+    fs.writeFile(`./${this.folder}/${file}.html`.replace(/ /g, "-"),  html, function(err) {
         if(err) {
             return console.log(err);
         }

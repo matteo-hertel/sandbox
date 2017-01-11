@@ -2,7 +2,7 @@ const git= require("./modules/git");
 const fileReader = require("./modules/fileReader");
 const markdown = require("./modules/markDownProcessor");
 
-//read();
+read();
 return;
 
 git.clone("https://github.com/getify/You-Dont-Know-JS.git", "./tmp")
