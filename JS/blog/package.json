@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "markdown:run": "rm -rf ./out && node index.js"
   },
   "author": "",
   "license": "ISC",
