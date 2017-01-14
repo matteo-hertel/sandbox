@@ -15,7 +15,7 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-        Resource: "arn:aws:dynamodb:eu-west:1:*:*"
+        Resource: "arn:aws:dynamodb:eu-west-1:*:*"
 
 
 
@@ -33,9 +33,10 @@ functions:
   create:
     handler: todos/create.create
     events:
-        path : todos
-        method: post
-        cors : true
+        - http:
+            path : todos
+            method: post
+            cors : true
 
 
 #    Define function environment variables here
@@ -46,9 +47,9 @@ functions:
 resources:
  Resources:
    TodosDynamoDbTable:
-     Type: AWS::DynamoDB::Table
+     Type: 'AWS::DynamoDB::Table'
      Properties:
-       AttributesDefinition:
+        AttributeDefinitions:
            -
                AttributeName: id
                AttributeType: S

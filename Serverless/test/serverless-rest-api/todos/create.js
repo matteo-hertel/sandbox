@@ -1,7 +1,7 @@
 'use strict';
 
 const AWS = require("aws-sdk");
-const dynamoDb = new AWS.DynamoDb.DocumentClient();
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const uuid = require("uuid");
 
 module.exports.create = (event, context, callback) => {
@@ -10,7 +10,7 @@ module.exports.create = (event, context, callback) => {
 
     if (typeof data.text !== "string") {
         console.log("Validation failed");
-        callback(new Error(`Can't create todo item, validation failed`));
+        callback(new Error("Can't create todo item, validation failed"));
     }
 
     const params = {
@@ -26,13 +26,15 @@ module.exports.create = (event, context, callback) => {
     dynamoDb.put(params, (error, result) => {
         if (error) {
             console.log(error);
-            callback(new Error(`Can't create todo item, failed to write`));
+            callback(new Error("Can't create todo item, failed to write"));
             return;
         }
 
         const response = {
             statusCode: 200,
-            body: JSON.stringify(result.Item)
+            body: JSON.stringify({
+                status : "created"
+            })
         };
         callback(null, response);
     });
