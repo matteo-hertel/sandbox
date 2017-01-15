@@ -3,9 +3,9 @@ const markdown = require( "markdown" ).markdown;
 const mkpath = require('mkpath');
 const path = require("path");
 
-const process = (files, folder) => {
-    this.folder = folder;
+const process = (files) => {
     files.forEach(convert);
+    return true;
 };
 
 const convert = (file, index) => {
@@ -17,20 +17,12 @@ const convert = (file, index) => {
         } catch (e) {
             html = "error";
         }
-        publish(html, file, this.folder);
+        publish(html, file);
     });
 };
 
-const publish= (html, file, folder) => {
-    mkpath.sync(`./${this.folder}/${path.dirname(file)}`.replace(/ /g, "-"), 0700);
-
-    fs.writeFile(`./${this.folder}/${file}.html`.replace(/ /g, "-"),  html, function(err) {
-        if(err) {
-            return console.log(err);
-        }
-
-        console.log("The file was saved!");
-    });
+const publish= (html, file) => {
+    console.log("The file was saved!");
 };
 
 module.exports = {
