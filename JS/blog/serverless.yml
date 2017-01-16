@@ -1,4 +1,4 @@
-service: blog-fetcher
+service: blog
 
 provider:
   name: aws
