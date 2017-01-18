@@ -1,6 +1,5 @@
 const fs = require('fs');
 const markdown = require( "markdown" ).markdown;
-const mkpath = require('mkpath');
 const path = require("path");
 
 const process = (files) => {
