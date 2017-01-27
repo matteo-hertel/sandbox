@@ -25,11 +25,10 @@ const getFile = (author, repo, branch, path) => {
         ref: branch
 
     }).then((res) => {
-        return JSON.parse(Buffer.from(res.content, 'base64').toString());
+        return Buffer.from(res.content, 'base64').toString();
     }).
     catch((err) => {
-        console.log(`Error while fetching info for ${author}, ${repo}, ${branch}. Error ${err}`);
-        return {};
+        throw Error(`Error while fetching info for ${author}, ${repo}, ${branch}. Error ${err}`);
     });
 };
 module.exports = {
