@@ -10,7 +10,7 @@ describe("Git Module", () => {
     });
     it('should return an array of files if a folder path is passed', () => {
         return git.getFolder("matteo-hertel", "blog", "master", "posts").then((files) => {
-            expect(files.length).toBeTruthy();
+            expect(files.length).toBeGreaterThan(0);
         });
     });
 });
