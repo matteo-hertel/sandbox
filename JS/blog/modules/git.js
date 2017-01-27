@@ -1,21 +1,23 @@
-var GitHubApi = require("github");
-
+const GitHubApi = require("github");
+const PromisePolyfill = require('bluebird');
 const getFile = (author, repo, branch, path) => {
     return _get(author, repo, branch, path)
         .then((res) => {
             res.content = Buffer.from(res.content, 'base64').toString();
             return {
-                name : res.name,
+                name: res.name,
                 content: res.content
             };
-        }).
-    catch((err) => {
-        throw Error(`Error while fetching info for ${author}, ${repo}, ${branch}. Error ${err}`);
-    });
+        })
+        .catch((err) => {
+            throw Error(`Error while fetching info for ${author}, ${repo}, ${branch}. Error ${err}`);
+        });
 };
 const getFolder = (author, repo, branch, path) => {
     return _get(author, repo, branch, path)
-        .then(_extractFiles)
+        .then((files) => {
+            return _extractFiles(files);
+        })
         .catch((err) => {
             throw Error(`Error while fetching info for ${author}, ${repo}, ${branch}. Error ${err}`);
         });
@@ -26,23 +28,20 @@ module.exports = {
 };
 
 const _extractFiles = (list) => {
-    return new Promise((resolve, reject) => {
-        resolve(list);
-    }).then((list) => {
-        let files = list.filter((item)=>{
-            return item.type === "file";
-        });
+    let files = list.filter((item) => {
+        return item.type === "file";
+    });
 
-        return files.map((item) => {
-            return {
-                name: item.name,
-                path: item.path
-            };
-        });
+    return files.map((item) => {
+        return {
+            name: item.name,
+            path: item.path
+        };
     });
 };
 
 const _makeConfig = () => {
+
     var github = new GitHubApi({
         protocol: "https",
         host: "api.github.com", // should be api.github.com for GitHub
@@ -50,7 +49,7 @@ const _makeConfig = () => {
         headers: {
             "user-agent": "Blogs Bot" // GitHub is happy with a unique user agent
         },
-        Promise: require('bluebird'),
+        Promise : PromisePolyfill,
         followRedirects: false, // default: true; there's currently an issue with non-get redirects, so allow ability to disable follow-redirects
         timeout: 15000
     });
@@ -62,9 +61,8 @@ const _makeConfig = () => {
 
     return github;
 };
-
+const github = _makeConfig();
 const _get = (author, repo, branch, path) => {
-    const github = _makeConfig();
     return github.repos.getContent({
         owner: author,
         repo: repo,
