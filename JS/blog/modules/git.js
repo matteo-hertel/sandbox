@@ -21,7 +21,11 @@ github.authenticate({
 const getFile = (author, repo, branch, path) => {
     return _get(author, repo, branch, path)
         .then((res) => {
-            return Buffer.from(res.content, 'base64').toString();
+            res.content = Buffer.from(res.content, 'base64').toString();
+            return {
+                name : res.name,
+                content: res.content
+            };
         }).
     catch((err) => {
         throw Error(`Error while fetching info for ${author}, ${repo}, ${branch}. Error ${err}`);

@@ -1,6 +1,6 @@
 const markdown = require( "markdown" ).markdown;
 
-const convert = (file, index) => {
+const convert = (file) => {
     return new Promise((resolve, reject) => {
         resolve(file);
     })
