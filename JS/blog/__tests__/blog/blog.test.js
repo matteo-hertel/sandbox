@@ -15,4 +15,10 @@ describe("Blog Module", () => {
             expect(data.updatedDate).toBeDefined();
         });
     });
+    it('should execute the catch if the file does not exists', () => {
+        return blog.getStorable("does/not/exists")
+        .catch((exc) => {
+            expect(exc).toBeDefined();
+        });
+    });
 });

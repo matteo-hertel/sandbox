@@ -8,18 +8,12 @@ const getFile = (author, repo, branch, path) => {
                 name: res.name,
                 content: res.content
             };
-        })
-        .catch((err) => {
-            throw Error(`Error while fetching info for ${author}, ${repo}, ${branch}. Error ${err}`);
         });
 };
 const getFolder = (author, repo, branch, path) => {
     return _get(author, repo, branch, path)
         .then((files) => {
             return _extractFiles(files);
-        })
-        .catch((err) => {
-            throw Error(`Error while fetching info for ${author}, ${repo}, ${branch}. Error ${err}`);
         });
 };
 module.exports = {
