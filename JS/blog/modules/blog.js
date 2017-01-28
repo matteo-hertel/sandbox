@@ -35,9 +35,21 @@ const getStorable = (file) => {
             });
         });
 };
+const reIndexPosts = () => {
+    return git.getFolder(author, repo, branch, "/test/posts")
+        .then((files) => {
+            return co(function*() {
+                let out = yield files.map((item) => {
+                    return getStorable(item.path);
+                });
+                return out;
+            });
+        });
+};
 
 module.exports = {
-    getStorable
+    getStorable,
+    reIndexPosts
 };
 
 const _makeTitle = (string) => {

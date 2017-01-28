@@ -1,0 +1,34 @@
+exports[`Blog Module should return a list of storable payloads on re-index 1`] = `
+Array [
+  Object {
+    "body": "<h1>Test Post</h1>
+
+<p>the copy of the test post will go here</p>",
+    "createdDate": 1485460800,
+    "name": "Test Post Seo",
+    "seo": "2017-01-27-test-post-seo",
+    "updatedDate": 1485593188,
+  },
+  Object {
+    "body": "<h1>Test Post</h1>
+
+<p>the copy of the test post will go here</p>",
+    "createdDate": 1485547200,
+    "name": "Test Post2 Seo",
+    "seo": "2017-01-28-test-post2-seo",
+    "updatedDate": 1485593188,
+  },
+]
+`;
+
+exports[`Blog Module should return a storable payload for a given file 1`] = `
+Object {
+  "body": "<h1>Test Post</h1>
+
+<p>the copy of the test post will go here</p>",
+  "createdDate": 1485460800,
+  "name": "Test Post Seo",
+  "seo": "2017-01-27-test-post-seo",
+  "updatedDate": 1485593193,
+}
+`;
