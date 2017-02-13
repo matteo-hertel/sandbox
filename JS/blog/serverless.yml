@@ -18,23 +18,12 @@ provider:
         Resource: "arn:aws:dynamodb:eu-west-1:*:*"
 
 
-
-
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.js
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.js
-#    - exclude-me-dir/**
-
 functions:
-  parse:
-    handler: process.process
+  webhook:
+    handler: endpoints/webhook.process
     events:
         - http:
-            path : process
+            path : webhook
             method: post
             cors : true
 
