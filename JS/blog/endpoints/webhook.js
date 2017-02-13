@@ -1,6 +1,8 @@
 require('dotenv').config({path: `${__dirname}/.env`});
 
-modules.exports.process = (event, context, callback) => {
+module.exports.process = (e, context, callback) => {
+    const body = JSON.parse(e.body);
+    console.log(JSON.stringify(body, null, 4));
     callback(null, {
         statusCode:200,
         body : JSON.stringify({
