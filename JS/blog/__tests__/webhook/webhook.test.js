@@ -19,4 +19,17 @@ describe("Webhook Module", () => {
             expect(err).toBeFalsy();
         });
     });
+    it('should contain the pull request name and owner', () => {
+        return webhook.getRepoAndOwner(require(`${__dirname}/../../mocks/webhooks/mergedPR.json`))
+        .then((repo) => {
+            expect(repo.owner).toBeDefined();
+            expect(repo.name).toBeDefined();
+        });
+    });
+    it('should reject the promise if an error occurred while getting the repo name and owner', () => {
+        return webhook.acceptValidPRs({})
+        .catch((err)=>{
+            expect(err).toBeDefined();
+        });
+    });
 });
