@@ -3,8 +3,8 @@ require('dotenv').config({
 });
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
-const webhook = require(`${__dirname}/../../modules/webhook`);
-const git = require(`${__dirname}/../../modules/git`);
+const webhook = require(`${__dirname}/../../modules/git/webhook`);
+const git = require(`${__dirname}/../../modules/git/fs`);
 
 describe("Webhook Module", () => {
     it('should contain the pull request object', () => {

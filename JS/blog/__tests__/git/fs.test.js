@@ -3,7 +3,7 @@ require('dotenv').config({
 });
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
-const git = require(`${__dirname}/../../modules/git`);
+const git = require(`${__dirname}/../../modules/git/fs`);
 describe("Git Module", () => {
     it('should return the file when calling github api for a particular file', () => {
         return git.getFile("matteo-hertel", "blog", "master", "README.md").then((file) => {

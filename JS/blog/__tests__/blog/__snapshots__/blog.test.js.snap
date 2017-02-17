@@ -7,7 +7,7 @@ Array [
     "createdDate": 1485460800,
     "name": "Test Post Seo",
     "seo": "2017-01-27-test-post-seo",
-    "updatedDate": 1485593188,
+    "updatedDate": 1487369355,
   },
   Object {
     "body": "<h1>Test Post</h1>
@@ -16,7 +16,16 @@ Array [
     "createdDate": 1485547200,
     "name": "Test Post2 Seo",
     "seo": "2017-01-28-test-post2-seo",
-    "updatedDate": 1485593188,
+    "updatedDate": 1487369355,
+  },
+  Object {
+    "body": "<h1>Test Webhook</h1>
+
+<p>the copy of the test post will go here for testing the webhook</p>",
+    "createdDate": 1487016000,
+    "name": "Test Post2 Seo",
+    "seo": "2017-02-14-test-post2-seo",
+    "updatedDate": 1487369355,
   },
 ]
 `;
@@ -29,6 +38,6 @@ Object {
   "createdDate": 1485460800,
   "name": "Test Post Seo",
   "seo": "2017-01-27-test-post-seo",
-  "updatedDate": 1485593193,
+  "updatedDate": 1487369361,
 }
 `;

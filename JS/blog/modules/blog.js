@@ -2,7 +2,7 @@ require('dotenv').config({
     path: `${__dirname}/../.env`
 });
 
-const git = require(`${__dirname}/git`);
+const git = require(`${__dirname}/git/fs`);
 const markdown = require(`${__dirname}/markdownProcessor`);
 const moment = require("moment");
 const co = require("co");
