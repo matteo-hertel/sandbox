@@ -3,15 +3,25 @@ const acceptValidPRs = (payload) => {
     return new Promise((resolve, reject)=>{
         const pr = payload.pull_request || false;
         if(!payload.hasOwnProperty("pull_request")){
-            return reject(false);
+            return reject('Payload object does not have a pull_request property');
         }
         if(payload.pull_request.state !== 'closed'){
-            return reject(false);
+            return reject("Pull request is not closed");
         }
         if(payload.pull_request.merged !== true){
-            return reject(false);
+            return reject("Pull request is not merged");
         }
         return resolve(payload.pull_request);
+    });
+};
+const getMergeSha = (payload) => {
+
+    return new Promise((resolve, reject)=>{
+        try{
+            resolve(payload.pull_request.merge_commit_sha);
+        }catch(exc){
+            reject("Merge SHA does not exists");
+        }
     });
 };
 const getRepoAndOwner = (payload) => {
@@ -34,5 +44,6 @@ const getRepoAndOwner = (payload) => {
 
 module.exports = {
     acceptValidPRs,
-    getRepoAndOwner
+    getRepoAndOwner,
+    getMergeSha
 };

@@ -13,10 +13,10 @@ describe("Webhook Module", () => {
             expect(pr.id).toBeDefined();
         });
     });
-    it('should return false if the pr object does not exitsts ', () => {
+    it('should reject and return false if the pr object does not exitsts ', () => {
         return webhook.acceptValidPRs({})
         .catch((err)=>{
-            expect(err).toBeFalsy();
+            expect(err).toBeDefined();
         });
     });
     it('should contain the pull request name and owner', () => {
@@ -28,6 +28,18 @@ describe("Webhook Module", () => {
     });
     it('should reject the promise if an error occurred while getting the repo name and owner', () => {
         return webhook.acceptValidPRs({})
+        .catch((err)=>{
+            expect(err).toBeDefined();
+        });
+    });
+    it('should contain the merge reqeust sha', () => {
+        return webhook.getMergeSha(require(`${__dirname}/../../mocks/webhooks/mergedPR.json`))
+        .then((sha) => {
+            expect(sha).toBeDefined();
+        });
+    });
+    it('should reject and return false if the sha commit does not exitsts ', () => {
+        return webhook.getMergeSha({})
         .catch((err)=>{
             expect(err).toBeDefined();
         });
