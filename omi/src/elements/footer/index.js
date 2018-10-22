@@ -7,10 +7,10 @@ class FooterElement extends WeElement{
         return style
     }
 
-    render(props, data){
-        console.log({props, data})
+    render(props, data, children){
         return(
             <div class="footer">
+            <slot></slot>
             </div> 
         )
     }
