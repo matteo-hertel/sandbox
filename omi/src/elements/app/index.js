@@ -2,7 +2,7 @@ import { tag, WeElement } from 'omi'
 import logo from './logo.svg'
 import style from './_index.css'
 import '../app-intro'
-
+import '../todo-app'
 @tag('my-app')
 class MyApp extends WeElement {
 
@@ -26,6 +26,7 @@ class MyApp extends WeElement {
           <h1 class="app-title">Welcome to {data.name}</h1>
         </header>
         <app-intro></app-intro>
+        <todo-app></todo-app>
       </div>
     )
   }
