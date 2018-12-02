@@ -1,14 +1,20 @@
 ## Develop
 
-``` bash
+```bash
 npm install
 npm start
 ```
 
 ## Release
 
-``` bash
+```bash
 npm build
+```
+
+## Eslint + Prettier
+
+``` bash
+npm run fix
 ```
 
 ## Directory description
