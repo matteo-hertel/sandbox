@@ -18,7 +18,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@stencil/core": "~0.15.2"
+    "@code-dimension/stencil-components": "0.0.0-beta.1",
+    "@stencil/core": "~0.15.2",
+    "split-me": "^1.1.5"
   },
   "license": "MIT"
 }
