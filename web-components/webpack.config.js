@@ -12,6 +12,11 @@ module.exports = {
     filename: 'app.[contenthash:8].js',
     publicPath: '/',
   },
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+    },
+  },
   resolve: {
     modules: ['node_modules', path.resolve(__dirname, '../src')],
     extensions: ['.js', '.ts'],
