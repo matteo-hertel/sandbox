@@ -1,6 +1,6 @@
 dist/
 www/
-
+bundle
 *~
 *.sw[mnpcod]
 *.log
