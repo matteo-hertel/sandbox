@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title><%= htmlWebpackPlugin.options.title %></title>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+  <paper-card heading="Emmental" image="http://placehold.it/350x150/FFC107/000000" alt="Emmental">
+      <div class="card-content">
+        Emmentaler or Emmental is a yellow, medium-hard cheese that originated in the area around Emmental, Switzerland. It is one of the cheeses of Switzerland, and is sometimes known as Swiss cheese.
+      </div>
+      <div class="card-actions">
+        <paper-button>Share</paper-button>
+        <paper-button>Explore!</paper-button>
+      </div>
+    </paper-card>
+    <paper-progress indeterminate class="blue"></paper-progress>
+    <paper-progress indeterminate class="slow red"></paper-progress>
+    <paper-progress value="40" secondary-progress="80"></paper-progress>
+  <div>
+      <paper-button id="btn">Status</paper-button>
+      <paper-badge
+          icon="favorite"
+          for="btn"
+          label="favorite icon">
+      </paper-badge>
+    </div>
+
+    <div>
+      <paper-icon-button
+          id="account-box"
+          icon="account-box"
+          alt="account-box">
+      </paper-icon-button>
+      <paper-badge
+          icon="social:mood"
+          for="account-box"
+          label="mood icon">
+      </paper-badge>
+    </div>
+
+<paper-button class="pink">link</paper-button>
+<paper-button raised class="custom indigo">raised</paper-button>
+<paper-button toggles raised class="custom green">toggles</paper-button>
+<paper-button disabled class="custom disabled">disabled</paper-button>
+<custom-style>
+  <style>
+    paper-button.custom {
+      --paper-button-ink-color: green;
+      /* These could also be individually defined for each of the
+        specific css classes, but we'll just do it once as an example */
+      --paper-button-flat-keyboard-focus: {
+        background-color: var(--paper-pink-a200) !important;
+        color: white !important;
+      };
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-pink-a200) !important;
+        color: white !important;
+      };
+    }
+    paper-button.custom:hover {
+      background-color: var(--paper-indigo-100);
+    }
+    paper-button.pink {
+      color: var(--paper-pink-a200);
+
+    }
+    paper-button.indigo {
+      background-color: var(--paper-indigo-500);
+      color: white;
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-pink-a200) !important;
+        color: white !important;
+      };
+    }
+    paper-button.green {
+      background-color: var(--paper-green-500);
+      color: white;
+    }
+    paper-button.green[active] {
+      background-color: var(--paper-red-500);
+    }
+    paper-button.disabled {
+      color: white;
+      background-color: bisque;
+    }
+  </style>
+</custom-style>
+
+</body>
+</html>

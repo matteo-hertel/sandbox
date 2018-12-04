@@ -21,10 +21,6 @@ export namespace Components {
 
   interface MyComponent {
     /**
-    * The first name
-    */
-    'first': string;
-    /**
     * The last name
     */
     'last': string;
@@ -34,10 +30,6 @@ export namespace Components {
     'middle': string;
   }
   interface MyComponentAttributes extends StencilHTMLAttributes {
-    /**
-    * The first name
-    */
-    'first'?: string;
     /**
     * The last name
     */
