@@ -9,10 +9,10 @@ paginate = 5
   subtitle = "Your site subtitle"
 
 [params.logo]
-  logoText = "hello friend"
+  #logoText = "hello friend"
 #   or
 #
-#   path = "/img/your-example-logo.svg"
+   path = "/assets/logo/Slice 1@2x.svg"
 #   alt = "Your example logo alt text"
 
 [menu]
