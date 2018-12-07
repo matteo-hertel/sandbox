@@ -1,4 +1,5 @@
 import { Command, flags } from "@oclif/command";
+import cli from "cli-ux";
 
 import { Component } from "../lib/interfaces";
 
@@ -35,7 +36,9 @@ export default class AddComponent extends Command {
   async run() {
     const { args, flags } = this.parse(AddComponent);
     const component = this.makeComponent(args.name, flags.path, flags.mode);
+    cli.action.start("Adding your component");
     await addToDefinitionFile(component);
+    cli.action.stop();
     this.log(`Component ${args.name} added to your bundle`);
   }
 
