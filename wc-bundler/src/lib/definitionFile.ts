@@ -5,7 +5,7 @@ import { asyncReadFile, asyncWriteFile } from "./io";
 export async function addToDefinitionFile(component: Component) {
   let currentDefinitionFile;
   try {
-    const buffer = await loadDefinionFile();
+    const buffer = await loadDefinitionFile();
     currentDefinitionFile = JSON.parse(buffer.toString());
     // tslint:disable-next-line
   } catch (exc) {
@@ -42,7 +42,7 @@ function writeDefinitionFile(data: DefinitionFile) {
   );
 }
 
-function loadDefinionFile(): Promise<Buffer> {
+export function loadDefinitionFile(): Promise<Buffer> {
   return asyncReadFile(getDefinitionFilePath());
 }
 
