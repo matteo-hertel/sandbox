@@ -1,5 +1,8 @@
 import { Command, flags } from "@oclif/command";
-import { definitionFileExists } from "./../lib/definitionFile";
+
+import { Component } from "../lib/interfaces";
+
+import { addToDefinitionFile } from "./../lib/definitionFile";
 
 export default class AddComponent extends Command {
   static description = "Add Web component wc-bundle.json";
@@ -11,11 +14,13 @@ export default class AddComponent extends Command {
 
   static flags = {
     help: flags.help({ char: "h" }),
+
     path: flags.string({
       char: "p",
       default: "",
       description: "Import path, inferred if not provided"
     }),
+
     mode: flags.string({
       char: "m",
       options: ["default", "preload"], // only allow the value to be from a discrete set
@@ -25,11 +30,32 @@ export default class AddComponent extends Command {
     })
   };
 
-  static args = [{ name: "component-name", required: true }];
+  static args = [{ name: "name", required: true }];
 
   async run() {
     const { args, flags } = this.parse(AddComponent);
-    this.log(definitionFileExists());
-    this.log(args, flags);
+    const component = this.makeComponent(args.name, flags.path, flags.mode);
+    await addToDefinitionFile(component);
+    this.log(`Component ${args.name} added to your bundle`);
+  }
+
+  makeComponent(
+    name: string,
+    path: string | undefined,
+    mode: string | undefined
+  ): Component {
+    if (!path) {
+      const [, ...pathArray] = name.split("/");
+      path = pathArray.join("/");
+    }
+    //making TS happy :(
+    if (!mode) {
+      mode = `${mode}`;
+    }
+    return {
+      name,
+      path,
+      mode
+    };
   }
 }

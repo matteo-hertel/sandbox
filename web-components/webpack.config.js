@@ -2,8 +2,6 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const stencil = require('@stencil/webpack');
 
-const AssetsPlugin = require('assets-webpack-plugin');
-
 module.exports = {
   entry: './src/index.js',
   output: {
@@ -18,7 +16,6 @@ module.exports = {
   },
   plugins: [
     new stencil.StencilPlugin(),
-    new AssetsPlugin({path: path.join(__dirname, 'dist')}),
     new HtmlWebpackPlugin({
       template: 'public/index.html',
       filename: 'components.html',
