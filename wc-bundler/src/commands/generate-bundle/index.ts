@@ -10,6 +10,8 @@ export default class GenerateBundle extends Command {
   };
 
   async run() {
+    // tslint:disable-next-line
+    const { flags } = this.parse(GenerateBundle);
     this.log(
       `The bundle has been generated now you can run build it by running:`
     );
