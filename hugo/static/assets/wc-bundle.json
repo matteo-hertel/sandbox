@@ -1,0 +1,44 @@
+{
+  "components": [
+    {
+      "name": "aframe",
+      "path": "",
+      "mode": "default"
+    },
+    {
+      "name": "simple-button",
+      "path": "dist/simple-button",
+      "mode": "default"
+    },
+    {
+      "name": "@polymer/paper-style",
+      "path": "paper-style",
+      "mode": "preload"
+    },
+    {
+      "name": "@polymer/paper-progressbar",
+      "path": "paper-progressbar",
+      "mode": "preload"
+    },
+    {
+      "name": "@polymer/paper-button",
+      "path": "paper-button",
+      "mode": "preload"
+    },
+    {
+      "name": "@polymer/iron-icon",
+      "path": "iron-icon",
+      "mode": "preload"
+    },
+    {
+      "name": "@polymer/paper-card",
+      "path": "paper-card",
+      "mode": "preload"
+    },
+    {
+      "name": "aframe-environment-component",
+      "path": "",
+      "mode": "default"
+    }
+  ]
+}
