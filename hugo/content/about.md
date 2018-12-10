@@ -36,6 +36,7 @@ big fuck off icon!!
 <iron-icon icon="icons:aspect-ratio"></iron-icon>
 
 {{< components >}}
+<simple-button type="raised" color="primary">Click me</simple-button>
 
 <paper-card heading="Emmental" image="http://placehold.it/350x150/FFC107/000000" alt="Emmental">
       <div class="card-content">

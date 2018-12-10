@@ -5,6 +5,7 @@ import { dirname } from "path";
 import { BUNDLE_PATH } from "../../constants";
 import { loadDefinitionFile } from "../../lib/definitionFile";
 import { Component, DefinitionFile } from "../../lib/interfaces";
+
 import { asyncMkdir } from "./../../lib/io";
 
 const fileList = [
@@ -64,11 +65,13 @@ async function ensurePath(path: string): Promise<string> {
   return path;
 }
 
-function appendToFile(file: string, content: string[]): void {
+async function appendToFile(file: string, content: string[]): Promise<void> {
   const stream = createWriteStream(file, { flags: "a" });
-  stream.write("");
-  content.map(async c => stream.write(Buffer.from(`${c}\n`, "utf-8")));
-  stream.end();
+  await stream.write("");
+  await Promise.all(
+    content.map(c => stream.write(Buffer.from(`${c}\n`, "utf-8")))
+  );
+  await stream.end();
 }
 
 function processDefinitionFile(definitionFile: DefinitionFile): string[] {
