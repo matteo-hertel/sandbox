@@ -31,12 +31,12 @@
     "typescript": "^3.2.1"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=10.13.0"
   },
   "files": [
     "/bin",
     "/lib",
-    "/npm-shrinkwrap.json",
+    "/package-lock.json",
     "/oclif.manifest.json"
   ],
   "homepage": "https://github.com/matteo-hertel/wc-bundler",

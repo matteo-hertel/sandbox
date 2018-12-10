@@ -7,7 +7,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "components"),
     filename: "app.[contenthash:8].js",
-    publicPath: "/components/"
+    publicPath: "/assets/components/"
   },
   optimization: {
     splitChunks: {

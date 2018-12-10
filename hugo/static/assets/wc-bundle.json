@@ -6,18 +6,18 @@
       "mode": "default"
     },
     {
-      "name": "simple-button",
+      "name": "simple-buttons",
       "path": "dist/simple-button",
       "mode": "default"
     },
     {
-      "name": "@polymer/paper-style",
-      "path": "paper-style",
+      "name": "@polymer/paper-styles",
+      "path": "paper-styles",
       "mode": "preload"
     },
     {
-      "name": "@polymer/paper-progressbar",
-      "path": "paper-progressbar",
+      "name": "@polymer/paper-progress",
+      "path": "paper-progress",
       "mode": "preload"
     },
     {
@@ -26,8 +26,8 @@
       "mode": "preload"
     },
     {
-      "name": "@polymer/iron-icon",
-      "path": "iron-icon",
+      "name": "@polymer/iron-icons",
+      "path": "iron-icons",
       "mode": "preload"
     },
     {

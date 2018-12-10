@@ -38,23 +38,19 @@ export default class AddComponent extends Command {
     const component = this.makeComponent(args.name, flags.path, flags.mode);
     cli.action.start("Adding your component");
     await addToDefinitionFile(component);
-    cli.action.stop();
     this.log(`Component ${args.name} added to your bundle`);
   }
 
   makeComponent(
     name: string,
     path: string | undefined,
-    mode: string | undefined
+    mode?: string
   ): Component {
     if (!path) {
       const [, ...pathArray] = name.split("/");
       path = pathArray.join("/");
     }
-    //making TS happy :(
-    if (!mode) {
-      mode = `${mode}`;
-    }
+
     return {
       name,
       path,
