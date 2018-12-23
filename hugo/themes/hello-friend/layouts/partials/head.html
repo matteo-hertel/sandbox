@@ -45,4 +45,3 @@
 {{ if .OutputFormats.Get "json" }}
 <link href="{{ if .OutputFormats.Get "json" }}{{ .Site.BaseURL }}feed.json{{ end }}" rel="alternate" type="application/json" title="{{ .Site.Title }}" />
 {{ end }}
-{{ partial "components.html" . }}

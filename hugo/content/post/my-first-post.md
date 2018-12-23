@@ -16,3 +16,8 @@ description = "\"Hello, friend?\" That's lame. Maybe I should give you a name?"
 > I'm talking to an imaginary person.
 >
 > **— Mr. Robot S01E01**
+
+<simple-button type="raised" color="primary">Click me</simple-button>
+{{< components >}}
+
+{{< /components >}}
