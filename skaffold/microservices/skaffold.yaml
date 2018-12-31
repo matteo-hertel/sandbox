@@ -9,5 +9,5 @@ build:
 deploy:
   kubectl:
     manifests:
-    - ./leeroy-web/kubernetes/*-dist.yaml
-    - ./leeroy-app/kubernetes/*-dist.yaml
+    - ./leeroy-web/kubernetes/*
+    - ./leeroy-app/kubernetes/*

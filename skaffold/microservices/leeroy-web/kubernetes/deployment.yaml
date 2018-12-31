@@ -19,6 +19,7 @@ kind: Deployment
 metadata:
   name: leeroy-web
   labels:
+    linkerd.io/auto-inject: enabled
     app: leeroy-web
 spec:
   replicas: 1
