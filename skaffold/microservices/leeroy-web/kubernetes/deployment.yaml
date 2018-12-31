@@ -32,6 +32,22 @@ spec:
     spec:
       containers:
       - name: leeroy-web
-        image: gcr.io/k8s-skaffold/leeroy-web
+        image: registry.gitlab.com/mhdev/k8s-playground/leeroy-web
         ports:
         - containerPort: 8080
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: leeroy-web
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: leeroy.mountaindev.uk
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: leeroy-web
+          servicePort: 8080
