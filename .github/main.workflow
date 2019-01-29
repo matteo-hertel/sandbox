@@ -4,7 +4,7 @@ workflow "Push" {
 }
 
 action "Hello World" {
-  uses = "./../actions/action-a"
+  uses = "./actions/action-a"
   env = {
     MY_NAME = "Papoi"
   }
