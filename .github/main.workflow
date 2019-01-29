@@ -1,10 +1,10 @@
-workflow "Main Workflow" {
-  resolves = ["Hello World"]
+workflow "New workflow" {
   on = "push"
+  resolves = ["Hello World"]
 }
 
 action "Hello World" {
-  uses = "./actions/action-a"
+  uses = "./../actions/action-a"
   env = {
     MY_NAME = "Papoi"
   }
