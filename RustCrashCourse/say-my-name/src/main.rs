@@ -13,9 +13,10 @@
 fn main() {
     let first_name = "Elon".to_string();
     let last_name = "Musk".to_string();
-    say_name(first_name, last_name);
+    say_name(&first_name, &last_name);
+    say_name(&first_name, &last_name);
 }
 
-fn say_name(first_name: String, last_name: String) {
+fn say_name(first_name: &String, last_name: &String) {
     println!("Your full name is {} {}", first_name, last_name);
 }
