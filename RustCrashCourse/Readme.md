@@ -72,3 +72,7 @@ For quick development error handling can be defered to a later time with the `un
 ```
 
 if the `parse` method fails, the program will panic, it's quicker to developr but the compiler will still complain
+
+## unused declaration
+
+prefixing a variable or function declaration with `_` will tell the compiler that the declaration doesn't have to be used
