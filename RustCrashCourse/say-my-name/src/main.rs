@@ -5,13 +5,15 @@ fn _test() {
     println!("HI")
 }
 fn main() {
-    println!("Please enter number no. 1: ");
-    let a = read_user_input();
-    println!("Please enter number no. 2: ");
-    let b = read_user_input();
+    loop {
+        println!("Please enter number no. 1: ");
+        let a = read_user_input();
+        println!("Please enter number no. 2: ");
+        let b = read_user_input();
 
-    let result = sum(a, b);
-    println!("{} + {} = {}", a, b, result);
+        let result = sum(a, b);
+        println!("{} + {} = {}", a, b, result);
+    }
 }
 
 fn sum(a: u32, b: u32) -> u32 {
