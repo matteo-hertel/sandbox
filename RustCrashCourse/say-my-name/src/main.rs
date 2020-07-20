@@ -1,4 +1,6 @@
 use std::io;
+use std::process;
+
 fn _test() {
     println!("HI")
 }
@@ -9,7 +11,7 @@ fn main() {
     let mut first_string = String::new();
     io::stdin().read_line(&mut first_string).unwrap();
 
-    let mut a: u32 = 0;
+    let a: u32;
 
     match first_string.trim().parse() {
         Ok(val) => {
@@ -17,6 +19,7 @@ fn main() {
         }
         Err(err) => {
             println!("Please enter a valid number, {}", err);
+            process::exit(1);
         }
     }
 
@@ -25,7 +28,7 @@ fn main() {
     let mut second_string = String::new();
     io::stdin().read_line(&mut second_string).unwrap();
 
-    let mut b: u32 = 0;
+    let b: u32;
 
     match second_string.trim().parse() {
         Ok(val) => {
@@ -33,6 +36,7 @@ fn main() {
         }
         Err(err) => {
             println!("Please enter a valid number, {}", err);
+            process::exit(1);
         }
     }
 
