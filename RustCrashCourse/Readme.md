@@ -57,3 +57,18 @@ error[E0382]: use of moved value: `last_name`
 
 once the function `say_name` has been called, the variables `first_name` and `last_name` can no longer be used as Rust will drop the value;
 if a value need to be re-used afer being passed around, needs to be passes by reference with the `&` symbol, this is also called _borrowing_ as the value of the variable is borrowed from the variable that owns the value. Note that the function signature needs to be updated to receive a type of borrowed value (same type prepended with a `&`)
+
+## Unwrap
+
+For quick development error handling can be defered to a later time with the `unwrap` method, in case of error the program will panic, for example
+
+```
+    println!("Please enter number no. 1: ");
+
+    let mut first_string = String::new();
+    io::stdin().read_line(&mut first_string);
+
+    let a: u32 = first_string.trim().parse().unwrap();
+```
+
+if the `parse` method fails, the program will panic, it's quicker to developr but the compiler will still complain
