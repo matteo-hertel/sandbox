@@ -2,7 +2,7 @@ module github.com/matteo-hertel/sandbox/goCQRS
 
 require (
 	github.com/gorilla/mux v1.6.2
-	github.com/gorilla/websocket v1.4.0
+	github.com/gorilla/websocket v1.4.1
 	github.com/kelseyhightower/envconfig v1.3.0
 	github.com/lib/pq v1.0.0
 	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329 // indirect
