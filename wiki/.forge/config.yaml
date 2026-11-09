@@ -1,0 +1,2 @@
+# forge per-project configuration. See: forge/references/reviewer-agents.md
+reviewer: auto    # auto | codex | gemini | claude | none
