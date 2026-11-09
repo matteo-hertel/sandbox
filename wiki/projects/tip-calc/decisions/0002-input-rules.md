@@ -39,6 +39,6 @@ Money is integer cents throughout; the rounding rule is the brief's: tip to the 
 
 ## Consequences
 
-- Money wording lives in [[projects/tip-calc/DESIGN]] Voice; the messages name the field and the fix ("People: enter a whole number, 1 or more.").
+- Money wording lives in [[projects/tip-calc/DESIGN]] Voice; the messages name the field and its whole rule, limit included ("People: enter a whole number, 1 to 999.").
 - A bill over 999999.99 or a tip over 100 shows a message instead of a number. **Evidence that would change this:** the owner hits a limit at a real check (raise it only with a hero that still fits).
 - Numbers print as plain digits with a `.` and two decimals, no thousands separator and no currency symbol.

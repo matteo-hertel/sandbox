@@ -9,10 +9,10 @@ tip-calc/                          (new, repo root)
      ▼
   calc.js ── calc({bill, tip, people}) → {tipCents, totalCents, eachCents, collectedCents, invalid}
      ▲                                    pure: strings in, integers or null out
-     │ read by index.html (browser) and calc.test.mjs (node:vm)
+     │ read by index.html (browser) and calc.test.mjs (node:vm runInThisContext)
   fonts/    3 × woff2 + OFL licence     loaded by @font-face from the same folder
   calc.test.mjs   node:test, no dependency
-  page.test.mjs   Playwright → real Chromium → file://…/index.html
+  page.test.mjs   Playwright → Chromium 141 headless shell, isMobile 320 wide → file://…/index.html
 ```
 
 ## Components & boundaries
@@ -23,11 +23,11 @@ tip-calc/                          (new, repo root)
 
 ## Data flow
 
-The user types in a field. `index.html` reads the three field strings, calls `calc`, and writes the result: the pinned readout (each pays), the Tip and Total rows, the rounding note under Total, and a message under any invalid field. A blank value renders as a label and a leader with no figure. Phase 2: a preset button writes its number into the tip field and runs the same path. Nothing is stored, sent or read back; closing the tab forgets everything.
+The user types in a field. `index.html` reads the three field strings, calls `calc`, and rewrites every output from that one result (so no old figure survives a cleared or broken field): the pinned readout (each pays), the Tip and Total rows, the rounding note under Total, and a message under any invalid field. A blank value renders as a label and a leader with no figure. Phase 2: a preset button writes its number into the tip field and runs the same path. Nothing is stored, sent or read back; closing the tab forgets everything. `page.test.mjs` holds that line: every non-`file:` request and every WebSocket is blocked and counted, and `localStorage`, `sessionStorage` and IndexedDB are read as empty at the end of the run ([[projects/tip-calc/decisions/0003-real-browser-tests]] Checked facts).
 
 ## The central bet
 
-A pinned each-pays readout above native inputs keeps "the number changes under your thumb" true on a 320 × 568 phone with the keypad up ([[projects/tip-calc/design/adr-calculator-screen]]). Evidence that would revisit it: the Risk gate in [[projects/tip-calc/plan]] fails at 320 × 208, or the human-evidence gate shows people close the keypad before reading (then variant 1, the answer last).
+A pinned each-pays readout above native inputs keeps "the number changes under your thumb" true on a 320 × 568 phone with the keypad up ([[projects/tip-calc/design/adr-calculator-screen]]). Evidence that would revisit it: the Risk gate in [[projects/tip-calc/plan]] fails at 320 × 208, or the human-evidence gate shows people close the keypad before reading (then variant 1, the answer last). The 320 × 208 check models a layout viewport that shrinks with the keypad, which Chrome for Android does because the viewport meta sets `interactive-widget=resizes-content`. iOS Safari never shrinks it, so on an iPhone the human-evidence gate is the only test of the bet ([[projects/tip-calc/decisions/0003-real-browser-tests]] Checked facts).
 
 ## Scale assumptions
 

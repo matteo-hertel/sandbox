@@ -29,7 +29,7 @@ The memorable thing, taken from the brief's "drawn to" line: the number each per
 - One light scheme. In a dark restaurant the paper may glare. **Evidence that would change this:** the owner reports glare at the human-evidence gate (then add a dark scheme using the lit-instrument palette inverted), or the gate shows nobody reads the ledger rows (then switch to the lit instrument).
 - Any phase that adds an off-token value, an unloaded font weight or an animated result is an objective finding in forge-polish.
 - Fonts add three files to a page the brief wanted in "a few files"; they are assets, not code. If the owner wants a single file, drop to the system monospace stack and accept losing the typeface.
-- The 15 / 18 / 20 preset row must fit 320px without scrolling; it does at 3 columns of about 79px. If it ever does not, the brief's pressure valve applies (drop the presets).
+- The tip row (15 / 18 / 20 and the free field) must fit 320px without scrolling; it does as four cells of about 58px ([[projects/tip-calc/design/adr-calculator-screen]]). If it ever does not, the brief's pressure valve applies (drop the presets).
 
 ## Taste record, to append when the owner approves
 

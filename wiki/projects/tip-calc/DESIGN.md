@@ -46,7 +46,7 @@ Contrast was computed (WCAG 2.x relative luminance); selected-preset text is sur
 
 4px base, named by multiples: `--space-1` 4 · `-2` 8 · `-3` 12 · `-4` 16 · `-6` 24 · `-8` 32 · `-12` 48 · `-16` 64. Components use steps, never raw values.
 
-Page padding 16 · slip padding 24 / 16 · between fields 12 · label column 88 · preset gap 8 · every control at least 48 tall. The result area (`.each`) is always 96 tall, so digits arriving never move the inputs. The 15 / 18 / 20 preset row is three equal columns and must fit 320px without scrolling.
+Page padding 16 · slip padding 24 / 16 · between fields 12 · label column 88 · preset gap 8 · every control at least 48 tall. The result area (`.each`) is always 96 tall, so digits arriving never move the inputs. The tip row is four equal cells (15 / 18 / 20 and the free field, about 58px each at 320, per [[projects/tip-calc/design/adr-calculator-screen]]) and must fit 320px without scrolling.
 
 ## Radius
 
@@ -58,13 +58,13 @@ Page padding 16 · slip padding 24 / 16 · between fields 12 · label column 88 
 
 ## Layout
 
-One column, left-aligned, 320px minimum. Every number is right-aligned to one edge so the decimal points line up from the fields down to the answer. Blank means blank: a ledger row with no value shows only its label and leader; no `0.00`. Invalid input shows its message under the field (`aria-invalid="true"`, text as well as colour) and the result area says what to fix.
+One column, left-aligned, 320px minimum and 390px maximum: a wider screen shows the 390 phone's layout on paper. Every number is right-aligned to one edge so the decimal points line up from the fields down to the answer. Blank means blank: a ledger row with no value shows only its label and leader; no `0.00`. Invalid input shows its message under the field (`aria-invalid="true"`, text as well as colour) and the result area says what to fix.
 
 ## Voice
 
 Plain · exact · quiet. Say what to do or what happened in the fewest words; never apologise or cheer.
-Empty state: "Type the bill. Each share shows here."
-Invalid: "People: enter a whole number, 1 or more." Rounded: "Rounded up to the cent."
+Empty state: "Type the bill. Each share shows here." A later blank field: "Type the tip." or "Type the head count.", same second sentence.
+Invalid: "Bill: enter an amount like 64.50, up to 999999.99." · "Tip: enter a whole percent, 0 to 100." · "People: enter a whole number, 1 to 999." The result area then says "Fix the bill to see each share." (the tip, the head count). Rounded: "Rounded up to the cent."
 
 ## Anti-patterns (objective findings in forge-polish)
 

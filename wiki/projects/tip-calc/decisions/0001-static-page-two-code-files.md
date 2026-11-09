@@ -19,7 +19,7 @@ No framework, bundler, build step or runtime dependency. Test tooling is [[proje
 ## Why
 
 - Fewest parts that deliver the brief: three inputs and one readout need no framework.
-- A classic script, not an ES module: Chrome refuses module scripts from `file://`, and the brief says the page works from a static file. Node tests load `calc.js` with `node:vm`, so the shipped file carries no `module.exports` shim.
+- A classic script, not an ES module: Chrome refuses module scripts from `file://`, and the brief says the page works from a static file. Checked 2026-11-09 in Chromium 141.0.7390.37 (headless shell) over `file://`: an external classic script loads; the same file as `type="module"` is blocked ("from origin 'null' has been blocked by CORS policy"); an inline module runs but could import nothing from disk. Node tests load `calc.js` with `node:vm` (`runInThisContext`; `calc` is a top-level `function` declaration, see [[projects/tip-calc/decisions/0003-real-browser-tests]] Checked facts), so the shipped file carries no `module.exports` shim.
 - `calc.js` is the only file split out, because the brief names the pure function and a Node test must be able to call it. CSS and wiring stay in `index.html`: nothing in the brief asks for more files.
 
 ## Alternatives considered
