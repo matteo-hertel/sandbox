@@ -159,6 +159,16 @@ async function fieldState(page, name) {
   }, name);
 }
 
+async function presetState(page, percent) {
+  return page.evaluate((p) => {
+    const btn = document.getElementById("preset-" + p);
+    return {
+      ariaPressed: btn.getAttribute("aria-pressed"),
+      background: getComputedStyle(btn).backgroundColor,
+    };
+  }, percent);
+}
+
 test("offline load: no network, no console/page errors, empty state, fonts, worked example, recovery, max value", async () => {
   const { context, page, tracker } = await openPage();
   try {
@@ -446,6 +456,7 @@ test("clearing fields without an input event and dispatching pageshow re-renders
     await setFields(page, { bill: "100", tip: "18", people: "3" });
     let readout = await readoutState(page);
     assert.equal(readout.figureText, "39.34");
+    assert.equal((await presetState(page, 18)).ariaPressed, "true");
 
     await page.evaluate(() => {
       document.getElementById("bill").value = "";
@@ -454,11 +465,15 @@ test("clearing fields without an input event and dispatching pageshow re-renders
     });
     readout = await readoutState(page);
     assert.equal(readout.figureText, "39.34", "value changes without an input event must not re-render on their own");
+    assert.equal((await presetState(page, 18)).ariaPressed, "true", "pressed state must not change without a render");
 
     await page.evaluate(() => window.dispatchEvent(new Event("pageshow")));
     readout = await readoutState(page);
     assert.equal(readout.figureHidden, true);
     assert.equal(readout.noteText, "Type the bill. Each share shows here.");
+    for (const percent of [15, 18, 20]) {
+      assert.equal((await presetState(page, percent)).ariaPressed, "false", `preset ${percent}% must be unpressed after pageshow clears the fields`);
+    }
 
     await assertClean(page, tracker);
   } finally {
@@ -492,11 +507,28 @@ test("access: lang, title, labels, tab order, aria wiring, status role, backgrou
       assert.ok(box.height >= 48 - EPS, `${id} must be at least 48px tall, got ${box.height}`);
     }
 
+    await page.goto(PAGE_URL);
+    await setFields(page, { bill: "100", people: "3" });
+
     await page.focus("#bill");
-    await page.keyboard.press("Tab");
-    assert.equal(await page.evaluate(() => document.activeElement.id), "tip");
-    await page.keyboard.press("Tab");
-    assert.equal(await page.evaluate(() => document.activeElement.id), "people");
+    const tabOrder = ["preset-15", "preset-18", "preset-20", "tip", "people"];
+    for (const id of tabOrder) {
+      await page.keyboard.press("Tab");
+      assert.equal(await page.evaluate(() => document.activeElement.id), id);
+    }
+
+    await page.focus("#preset-18");
+    const presetOutline = await page.evaluate(() => {
+      const style = getComputedStyle(document.getElementById("preset-18"));
+      return { width: style.outlineWidth, styleName: style.outlineStyle, color: style.outlineColor };
+    });
+    assert.equal(presetOutline.width, "2px");
+    assert.equal(presetOutline.styleName, "solid");
+    assert.equal(presetOutline.color, "rgb(20, 70, 143)");
+
+    await page.keyboard.press("Space");
+    const spaceReadout = await readoutState(page);
+    assert.equal(spaceReadout.figureText, "39.34");
 
     await page.focus("#bill");
     const outline = await page.evaluate(() => {
@@ -577,6 +609,109 @@ test("a wider screen keeps the column at 390px", async () => {
     const column = await page.locator(".page").boundingBox();
     assert.equal(column.x, 0);
     assert.equal(column.width, 390);
+
+    await assertClean(page, tracker);
+  } finally {
+    await context.close();
+  }
+});
+
+test("tapping a preset fills Tip, presses only it, and the readout follows", async () => {
+  const { context, page, tracker } = await openPage();
+  try {
+    await page.goto(PAGE_URL);
+    await setFields(page, { bill: "100", people: "3" });
+
+    await page.click("#preset-18");
+    assert.equal(await page.inputValue("#tip"), "18");
+    assert.equal((await presetState(page, 18)).ariaPressed, "true");
+    assert.equal((await presetState(page, 15)).ariaPressed, "false");
+    assert.equal((await presetState(page, 20)).ariaPressed, "false");
+    let readout = await readoutState(page);
+    assert.equal(readout.figureText, "39.34");
+
+    await page.click("#preset-20");
+    assert.equal(await page.inputValue("#tip"), "20");
+    assert.equal((await presetState(page, 20)).ariaPressed, "true");
+    assert.equal((await presetState(page, 15)).ariaPressed, "false");
+    assert.equal((await presetState(page, 18)).ariaPressed, "false");
+    readout = await readoutState(page);
+    assert.equal(readout.figureText, "40.00");
+
+    const selected = await presetState(page, 20);
+    assert.equal(selected.background, "rgb(20, 70, 143)");
+    const unselected15 = await presetState(page, 15);
+    const unselected18 = await presetState(page, 18);
+    assert.equal(unselected15.background, "rgb(250, 247, 238)");
+    assert.equal(unselected18.background, "rgb(250, 247, 238)");
+
+    await assertClean(page, tracker);
+  } finally {
+    await context.close();
+  }
+});
+
+test("a typed tip selects no preset; an invalid tip shows its message with nothing pressed; a preset recovers it", async () => {
+  const { context, page, tracker } = await openPage();
+  try {
+    await page.goto(PAGE_URL);
+    await setFields(page, { bill: "100", people: "3", tip: "18" });
+    assert.equal((await presetState(page, 18)).ariaPressed, "true");
+
+    await page.fill("#tip", "");
+    const tipLocator = page.locator("#tip");
+    await tipLocator.click();
+    await tipLocator.pressSequentially("22", { delay: 0 });
+
+    for (const percent of [15, 18, 20]) assert.equal((await presetState(page, percent)).ariaPressed, "false");
+    let readout = await readoutState(page);
+    assert.equal(readout.figureText, "40.67");
+
+    await page.fill("#tip", "101");
+    for (const percent of [15, 18, 20]) assert.equal((await presetState(page, percent)).ariaPressed, "false");
+    let tip = await fieldState(page, "tip");
+    assert.equal(tip.ariaInvalid, "true");
+    assert.equal(tip.msgHidden, false);
+    assert.equal(tip.msgText, "Tip: enter a whole percent, 0 to 100.");
+
+    await page.click("#preset-15");
+    assert.equal(await page.inputValue("#tip"), "15");
+    tip = await fieldState(page, "tip");
+    assert.equal(tip.ariaInvalid, null);
+    assert.equal(tip.msgHidden, true);
+    assert.equal((await presetState(page, 15)).ariaPressed, "true");
+    readout = await readoutState(page);
+    assert.equal(readout.figureText, "38.34");
+
+    await assertClean(page, tracker);
+  } finally {
+    await context.close();
+  }
+});
+
+test("the Tip % group holds the three presets and the field in one four-cell row that fits 320px", async () => {
+  const { context, page, tracker } = await openPage();
+  try {
+    await page.goto(PAGE_URL);
+
+    const group = page.getByRole("group", { name: "Tip %" });
+    await assert.doesNotReject(group.waitFor());
+    const groupChildren = await group.evaluate((el) => Array.from(el.children).map((c) => c.id));
+    assert.deepStrictEqual(groupChildren, ["preset-15", "preset-18", "preset-20", "tip"]);
+
+    await settle(page);
+    for (const id of ["preset-15", "preset-18", "preset-20", "tip"]) {
+      const box = await page.locator("#" + id).boundingBox();
+      assert.ok(box.width >= 48 - EPS, `${id} must be at least 48px wide, got ${box.width}`);
+      assert.ok(box.height >= 48 - EPS, `${id} must be at least 48px tall, got ${box.height}`);
+    }
+
+    await page.fill("#tip", "100");
+    const tipMetrics = await page.locator("#tip").evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
+    assert.ok(tipMetrics.scrollWidth <= tipMetrics.clientWidth, JSON.stringify(tipMetrics));
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    assert.equal(scrollWidth, 320);
 
     await assertClean(page, tracker);
   } finally {
