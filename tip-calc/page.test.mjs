@@ -638,6 +638,12 @@ test("tapping a preset fills Tip, presses only it, and the readout follows", asy
     readout = await readoutState(page);
     assert.equal(readout.figureText, "40.00");
 
+    await page.click("#preset-20");
+    assert.equal(await page.inputValue("#tip"), "20", "tapping the pressed preset again keeps its value");
+    assert.equal((await presetState(page, 20)).ariaPressed, "true", "tapping the pressed preset again keeps it pressed");
+    readout = await readoutState(page);
+    assert.equal(readout.figureText, "40.00");
+
     const selected = await presetState(page, 20);
     assert.equal(selected.background, "rgb(20, 70, 143)");
     const unselected15 = await presetState(page, 15);
@@ -686,6 +692,13 @@ test("a typed tip selects no preset; an invalid tip shows its message with nothi
     await page.fill("#tip", "18.0");
     assert.equal((await fieldState(page, "tip")).ariaInvalid, "true");
     for (const percent of [15, 18, 20]) assert.equal((await presetState(page, percent)).ariaPressed, "false", `"18.0" fails the tip rule, so ${percent}% must not be pressed`);
+
+    for (const [typed, percent, figure] of [["018", 18, "39.34"], [" 20 ", 20, "40.00"], ["0015", 15, "38.34"]]) {
+      await page.fill("#tip", typed);
+      assert.equal((await fieldState(page, "tip")).ariaInvalid, null, `"${typed}" passes the tip rule`);
+      for (const p of [15, 18, 20]) assert.equal((await presetState(page, p)).ariaPressed, String(p === percent), `"${typed}" is ${percent}%, so only ${percent}% is pressed`);
+      assert.equal((await readoutState(page)).figureText, figure);
+    }
 
     await page.fill("#bill", "");
     await page.fill("#people", "0");
