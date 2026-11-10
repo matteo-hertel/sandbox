@@ -683,6 +683,19 @@ test("a typed tip selects no preset; an invalid tip shows its message with nothi
     readout = await readoutState(page);
     assert.equal(readout.figureText, "38.34");
 
+    await page.fill("#tip", "18.0");
+    assert.equal((await fieldState(page, "tip")).ariaInvalid, "true");
+    for (const percent of [15, 18, 20]) assert.equal((await presetState(page, percent)).ariaPressed, "false", `"18.0" fails the tip rule, so ${percent}% must not be pressed`);
+
+    await page.fill("#bill", "");
+    await page.fill("#people", "0");
+    await page.fill("#tip", "18");
+    assert.equal((await presetState(page, 18)).ariaPressed, "true", "the pressed preset follows the tip alone, not Bill or People");
+    await page.click("#preset-20");
+    assert.equal(await page.inputValue("#tip"), "20");
+    assert.equal((await presetState(page, 20)).ariaPressed, "true");
+    assert.equal((await presetState(page, 18)).ariaPressed, "false");
+
     await assertClean(page, tracker);
   } finally {
     await context.close();
@@ -700,10 +713,17 @@ test("the Tip % group holds the three presets and the field in one four-cell row
     assert.deepStrictEqual(groupChildren, ["preset-15", "preset-18", "preset-20", "tip"]);
 
     await settle(page);
+    let previous = null;
     for (const id of ["preset-15", "preset-18", "preset-20", "tip"]) {
       const box = await page.locator("#" + id).boundingBox();
       assert.ok(box.width >= 48 - EPS, `${id} must be at least 48px wide, got ${box.width}`);
       assert.ok(box.height >= 48 - EPS, `${id} must be at least 48px tall, got ${box.height}`);
+      assert.ok(box.x + box.width <= 320 + EPS, `${id} must end inside 320px, got ${box.x + box.width}`);
+      if (previous) {
+        assert.ok(Math.abs(box.y - previous.y) <= EPS, `${id} must share a row with the cell before it`);
+        assert.ok(box.x >= previous.x + previous.width - EPS, `${id} must not overlap the cell before it`);
+      }
+      previous = box;
     }
 
     await page.fill("#tip", "100");

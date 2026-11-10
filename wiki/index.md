@@ -24,6 +24,7 @@ _None yet — the first ADR lands with [[plan]]._
 ### Incident notes
 
 - [[notes/2026-11-10-tip-calc-gate-checks-in-one-test]] — tip-calc's gate checks covered one browser context, skipped exact values, and measured boxes and face counts instead of text and font files
+- [[notes/2026-11-10-tip-calc-preset-tests-survived-mutations]] — tip-calc preset tests passed with the validator guard removed, a Bill-dependent press, and a wrapped row; three cases added
 
 ## Knowledge base
 
