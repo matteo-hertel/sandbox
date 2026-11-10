@@ -1,0 +1,12 @@
+{
+  "name": "tip-calc",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A one-page tip calculator: bill, tip percent, people, and what each person pays.",
+  "scripts": {
+    "test": "node --test calc.test.mjs page.test.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.56.1"
+  }
+}
