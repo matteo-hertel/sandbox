@@ -1,0 +1,526 @@
+<!doctype html>
+<!--
+  forge · interactive design feedback board (template)
+  ─────────────────────────────────────────────────────
+  HOW TO USE (for the agent generating a board):
+    1. Set the <title> and the .board-title / .board-sub text.
+    2. Fill <main id="sections"> with one <section data-feedback="NAME"> per
+       thing the user should react to. NAME is the label that appears in the
+       copied feedback (e.g. "Typography", "Color", "Variant: compact-table").
+       Put the REAL rendered design inside each section (specimen blocks,
+       a variant mockup, an iframe, screenshots — whatever the skill produced).
+       Real content, real text. No lorem, no placeholders.
+    3. For a side-by-side compare (design-explore), give <main> class="cols".
+    4. Leave everything below the `END TEMPLATE CONTENT` marker untouched —
+       the JS auto-attaches a feedback control to every [data-feedback] section,
+       persists to localStorage, and powers the "Copy feedback" button.
+  The file is self-contained: works opened as file:// or served over http.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design feedback — tip-calc</title>
+<style>
+  :root {
+    --ink: #16161a; --muted: #6b6b76; --line: #e4e4ea; --bg: #fbfbfd;
+    --surface: #ffffff; --accent: #2f5fe0; --good: #1f8a4c; --warn: #b4690e;
+    --radius: 10px; --pad: 20px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 "Plex Sans", sans-serif;
+    padding-bottom: 96px;
+  }
+  header.board {
+    position: sticky; top: 0; z-index: 5; background: var(--surface);
+    border-bottom: 1px solid var(--line); padding: 16px 24px;
+    display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  }
+  .board-title { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+  .board-sub { color: var(--muted); font-size: 13px; }
+  .board-spacer { flex: 1; }
+  .count { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  main { max-width: 1100px; margin: 28px auto; padding: 0 24px; display: grid; gap: 28px; }
+  main.cols { max-width: 1500px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); align-items: start; }
+  section[data-feedback] {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  section[data-feedback] > .sec-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-bottom: 1px solid var(--line); background: #fcfcfe;
+  }
+  .sec-name { font-weight: 600; font-size: 14px; }
+  .sec-body { padding: var(--pad); }
+  /* feedback control (injected) */
+  .fb { border-top: 1px dashed var(--line); padding: 14px 16px; background: #fafafc; }
+  .fb-chips { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .chip {
+    font: inherit; font-size: 12px; cursor: pointer; user-select: none;
+    border: 1px solid var(--line); background: #fff; color: var(--muted);
+    border-radius: 999px; padding: 3px 11px;
+  }
+  .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: #f0f4ff; }
+  .chip.love[aria-pressed="true"] { border-color: var(--good); color: var(--good); background: #eef8f1; }
+  .chip.fix[aria-pressed="true"]  { border-color: var(--warn); color: var(--warn); background: #fdf5ea; }
+  .fb textarea {
+    width: 100%; min-height: 54px; resize: vertical; font: inherit; font-size: 13.5px;
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; background: #fff;
+    color: var(--ink);
+  }
+  .fb textarea:focus, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .fb .has-note { color: var(--accent); }
+  /* copy bar */
+  .copybar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: 14px 24px; display: flex; align-items: center; gap: 14px;
+  }
+  .copybar .summary { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .copybar .grow { flex: 1; }
+  button.copy {
+    font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;
+    background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px;
+  }
+  button.ghost {
+    font: inherit; font-size: 13px; cursor: pointer; color: var(--muted);
+    background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 9px 14px;
+  }
+  button.copy:active { transform: translateY(1px); }
+  .copied { color: var(--good); font-weight: 600; font-size: 13px; }
+
+  @font-face { font-family: "Plex Mono"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Plex Mono"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Plex Sans"; font-weight: 400; font-style: normal; font-display: swap; src: url("fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
+
+  /* ── tip-calc tokens (the locked system; DESIGN.md is the contract) ── */
+  :root {
+    --font-display: "Plex Mono", monospace;
+    --font-data: "Plex Mono", monospace;
+    --font-body: "Plex Sans", sans-serif;
+    --text-label: 12px; --text-body: 16px; --text-data: 20px; --text-hero: min(48px, 16cqw);
+    --color-bg: #ece6d6; --color-surface: #faf7ee; --color-text: #1c1b18; --color-muted: #5b574c;
+    --color-accent: #14468f; --color-danger: #a32a1c; --color-line: #857f6d; --color-rule: #d4ccb6;
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+    --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+    --radius-control: 4px; --radius-slip: 2px;
+    --dur-micro: 100ms; --dur-short: 150ms; --dur-medium: 250ms; --dur-long: 400ms;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :root { --dur-micro: 0ms; --dur-short: 0ms; --dur-medium: 0ms; --dur-long: 0ms; }
+  }
+
+  /* ── specimen layout ── */
+  .lede { margin: 0 0 var(--space-4); max-width: 68ch; }
+  .cap { color: var(--muted); font-size: 13px; margin: var(--space-2) 0 0; max-width: 68ch; }
+  .row-wrap { display: flex; flex-wrap: wrap; gap: var(--space-6); align-items: flex-start; }
+  .frame { display: grid; gap: var(--space-2); }
+  .frame > .tag { font-size: 13px; color: var(--muted); }
+  .kv { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .kv th, .kv td { text-align: left; padding: var(--space-2) var(--space-3) var(--space-2) 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .kv th { font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* ── the slip ── */
+  .phone { width: 320px; max-width: 100%; background: var(--color-bg); padding: var(--space-4); border: 1px solid var(--color-rule); }
+  .slip { container-type: inline-size; background: var(--color-surface); border: 1px solid var(--color-rule); border-radius: var(--radius-slip); padding: var(--space-6) var(--space-4); font: 400 var(--text-body)/1.5 var(--font-body); color: var(--color-text); }
+  .slip .label, .slip h3, .slip dt, .slip label { font: 400 var(--text-label)/1.5 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
+  .slip h3 { margin: 0 0 var(--space-4); }
+  .field { display: grid; grid-template-columns: 88px 1fr; align-items: center; column-gap: var(--space-3); margin-bottom: var(--space-3); }
+  .field input { width: 100%; box-sizing: border-box; min-height: 48px; padding: var(--space-2) var(--space-3); font: 500 var(--text-data)/1.2 var(--font-data); text-align: right; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-control); transition: border-color var(--dur-short) var(--ease), box-shadow var(--dur-short) var(--ease); }
+  .field input:focus-visible, .presets button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .field input[aria-invalid="true"] { border-color: var(--color-danger); box-shadow: inset 0 0 0 1px var(--color-danger); }
+  .msg { margin: calc(var(--space-2) * -1) 0 var(--space-3); color: var(--color-danger); font-size: var(--text-body); }
+  .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin: 0 0 var(--space-3); }
+  .presets button { min-height: 48px; font: 500 var(--text-data)/1.2 var(--font-data); color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-control); cursor: pointer; transition: background-color var(--dur-short) var(--ease), color var(--dur-short) var(--ease), transform var(--dur-micro) var(--ease); }
+  .presets button:active { transform: translateY(1px); }
+  .presets button[aria-pressed="true"] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-surface); }
+  .perf { border: 0; border-top: 1px dashed var(--color-line); margin: var(--space-4) 0; }
+  .ledger { margin: 0 0 var(--space-4); }
+  .ledger > div { display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-1) 0; min-height: var(--space-8); box-sizing: border-box; }
+  .ledger .lead { flex: 1; min-width: var(--space-4); border-bottom: 1px dotted var(--color-line); }
+  .ledger dd { margin: 0; font: 500 var(--text-data)/1.2 var(--font-data); font-variant-numeric: tabular-nums; }
+  .each { min-height: calc(var(--space-16) + var(--space-8)); }
+  .each .label { display: block; }
+  .each output { display: block; text-align: right; font: 600 var(--text-hero)/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--color-accent); }
+  .each p { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: var(--text-body); }
+  .each output + p { text-align: right; }
+
+  /* ── swatches, spacing, radius, motion demos ── */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-6); }
+  .sw { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; font-size: 13px; background: #fff; }
+  .sw i { display: block; height: 56px; }
+  .sw b { display: block; padding: 8px 10px 0; font-weight: 600; }
+  .sw span { display: block; padding: 0 10px 8px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .sp { display: flex; align-items: center; gap: var(--space-3); margin: 0 0 var(--space-2); font: 500 13px/1.2 "Plex Mono", monospace; }
+  .sp i { display: block; height: var(--space-4); background: var(--color-accent); }
+  .sp em { font-style: normal; width: 120px; }
+  .rad { display: flex; gap: var(--space-6); flex-wrap: wrap; }
+  .rad div { width: 140px; height: 72px; border: 1px solid var(--color-line); background: var(--color-surface); display: grid; place-items: end start; padding: var(--space-2); font: 500 12px/1.2 "Plex Mono", monospace; box-sizing: border-box; }
+  .mo { display: grid; gap: var(--space-3); max-width: 520px; margin: 0 0 var(--space-4); }
+  .mo div { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: var(--space-3); font: 500 13px/1.2 "Plex Mono", monospace; }
+  .mo span { display: block; height: var(--space-4); background: var(--color-accent); width: var(--space-4); transition-property: transform; transition-timing-function: var(--ease); transition-duration: 0ms; }
+  .mo.go .m1 { transform: translateX(260px); transition-duration: var(--dur-micro); }
+  .mo.go .m2 { transform: translateX(260px); transition-duration: var(--dur-short); }
+  .mo.go .m3 { transform: translateX(260px); transition-duration: var(--dur-medium); }
+  .mo.go .m4 { transform: translateX(260px); transition-duration: var(--dur-long); }
+  .btn { font: inherit; font-size: 13px; cursor: pointer; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; }
+  .fit { width: 288px; box-sizing: border-box; background: var(--color-surface); border: 1px solid var(--color-rule); padding: var(--space-4); container-type: inline-size; }
+  .fit output { display: block; text-align: right; font: 600 var(--text-hero)/1 var(--font-display); color: var(--color-accent); font-variant-numeric: tabular-nums; }
+
+  /* ── direction sketches: layout + palette only, type held to Plex for the sketch ── */
+  .dirs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-6); }
+  .dir h4 { margin: 0 0 var(--space-1); font-size: 15px; }
+  .dir h4 small { font-weight: 400; color: var(--good); font-size: 12px; margin-left: 6px; }
+  .dir p { margin: var(--space-2) 0 0; font-size: 13.5px; }
+  .dir p b { font-weight: 600; }
+  .sk { width: 100%; max-width: 300px; box-sizing: border-box; padding: var(--space-4); font: 500 14px/1.3 "Plex Mono", monospace; }
+  .sk-a { background: #faf7ee; color: #1c1b18; border: 1px solid #d4ccb6; }
+  .sk-a div { display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-1) 0; }
+  .sk-a div u { flex: 1; text-decoration: none; border-bottom: 1px dotted #857f6d; }
+  .sk-a .big { font-size: 34px; font-weight: 600; color: #14468f; justify-content: space-between; }
+  .sk-b { background: #100f0d; color: #e9e2d0; }
+  .sk-b .big { font-size: 56px; font-weight: 600; line-height: 1; color: #ffb547; margin: var(--space-2) 0 var(--space-4); }
+  .sk-b span { display: block; color: #a39b86; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .sk-b i { font-style: normal; }
+  .sk-b div.in { background: #1d1b17; border: 1px solid #3a362d; padding: var(--space-2) var(--space-3); margin-top: var(--space-2); display: flex; justify-content: space-between; }
+  .sk-c { background: #ffd23f; color: #111; display: grid; gap: var(--space-3); }
+  .sk-c div { background: #fff; border: 3px solid #111; box-shadow: 4px 4px 0 #111; padding: var(--space-2) var(--space-3); display: flex; justify-content: space-between; font-weight: 600; }
+  .sk-c div.hot { background: #ff6b4a; font-size: 30px; }
+</style>
+</head>
+<body>
+<header class="board">
+  <span class="board-title">Design feedback — tip-calc</span>
+  <span class="board-sub">React to the system: ledger slip (recommended of three)</span>
+  <span class="board-spacer"></span>
+  <span class="count" id="count"></span>
+</header>
+
+<!-- ───────────────────────── TEMPLATE CONTENT ───────────────────────── -->
+<main id="sections">
+
+  <section data-feedback="Memorable thing + directions">
+    <div class="sec-head"><span class="sec-name">The memorable thing, and three directions</span></div>
+    <div class="sec-body">
+      <p class="lede"><b>The memorable thing (assumed from the brief's "drawn to"):</b> the number each person owes is the loudest thing on the screen, and it changes under your thumb as you type.</p>
+      <div class="dirs">
+        <div class="dir">
+          <div class="sk sk-a" aria-label="Ledger slip sketch">
+            <div>Bill<u></u>100.00</div>
+            <div>Tip 18%<u></u>18.00</div>
+            <div>Total<u></u>118.00</div>
+            <div class="big"><span>Each</span><span>39.34</span></div>
+          </div>
+          <h4>1. Ledger slip <small>recommended</small></h4>
+          <p>Feels like the bottom of the check: dot-leader rows, numerals in a mono face right-aligned to one edge, warm paper, the answer in ballpoint blue. Plex Mono for every number, Plex Sans for labels. One ink, one blue.</p>
+          <p><b>Wrong for:</b> a product that should feel playful, or a dark-mode-first one.</p>
+        </div>
+        <div class="dir">
+          <div class="sk sk-b" aria-label="Lit instrument sketch">
+            <span>Each pays</span>
+            <div class="big">39.34</div>
+            <span>Bill</span><div class="in"><i>100.00</i></div>
+            <span>Tip %</span><div class="in"><i>18</i></div>
+            <span>People</span><div class="in"><i>3</i></div>
+          </div>
+          <h4>2. Lit instrument</h4>
+          <p>A backlit readout in a dim room: near-black ground, one oversized amber figure at the top, inputs as quiet dark fields underneath. A condensed mono display face, amber used only on the readout.</p>
+          <p><b>Wrong for:</b> daylight on a patio, and anything that should show its arithmetic. The readout hides the working, so the rounding rule goes unseen.</p>
+        </div>
+        <div class="dir">
+          <div class="sk sk-c" aria-label="Chunky blocks sketch">
+            <div><span>Bill</span><span>100.00</span></div>
+            <div><span>Tip</span><span>18%</span></div>
+            <div><span>People</span><span>3</span></div>
+            <div class="hot"><span>39.34</span></div>
+          </div>
+          <h4>3. Chunky blocks</h4>
+          <p>A playful instrument: yellow ground, thick ink borders, hard offset shadows, blocks that press down with a springy motion. A heavy grotesque for display.</p>
+          <p><b>Wrong for:</b> a finished utility that should disappear after ten seconds. Springy motion fights "instant".</p>
+        </div>
+      </div>
+      <p class="cap">Sketches show layout and palette only; type is held to Plex Mono for all three. <b>Why 1:</b> its layout is the arithmetic (bill, tip, total, then each), so the brief's rounding rule is visible, and a blank field is a blank line, never "0.00". <b>What would change this:</b> the owner finds the paper glaring in a dark restaurant (then add a dark scheme), or the human-evidence gate shows nobody reads the ledger rows (then direction 2).</p>
+    </div>
+  </section>
+
+  <section data-feedback="The slip in four states">
+    <div class="sec-head"><span class="sec-name">The slip at 320px: empty, exact, rounded, invalid</span></div>
+    <div class="sec-body">
+      <div class="row-wrap">
+
+        <div class="frame"><div class="phone"><form class="slip" onsubmit="return false">
+          <h3>Tip calculator</h3>
+          <div class="field"><label for="a-bill">Bill</label><input id="a-bill" inputmode="decimal" autocomplete="off"></div>
+          <div class="field"><label for="a-tip">Tip %</label><input id="a-tip" inputmode="numeric" autocomplete="off"></div>
+          <div class="presets"><button type="button" aria-pressed="false">15%</button><button type="button" aria-pressed="false">18%</button><button type="button" aria-pressed="false">20%</button></div>
+          <div class="field"><label for="a-ppl">People</label><input id="a-ppl" inputmode="numeric" autocomplete="off"></div>
+          <hr class="perf">
+          <dl class="ledger"><div><dt>Tip</dt><span class="lead"></span><dd></dd></div><div><dt>Total</dt><span class="lead"></span><dd></dd></div></dl>
+          <div class="each"><span class="label">Each pays</span><p>Type the bill. Each share shows here.</p></div>
+        </form></div><span class="tag">Empty: blank lines, no zeros</span></div>
+
+        <div class="frame"><div class="phone"><form class="slip" onsubmit="return false">
+          <h3>Tip calculator</h3>
+          <div class="field"><label for="b-bill">Bill</label><input id="b-bill" inputmode="decimal" value="84.00" autocomplete="off"></div>
+          <div class="field"><label for="b-tip">Tip %</label><input id="b-tip" inputmode="numeric" value="20" autocomplete="off"></div>
+          <div class="presets"><button type="button" aria-pressed="false">15%</button><button type="button" aria-pressed="false">18%</button><button type="button" aria-pressed="true">20%</button></div>
+          <div class="field"><label for="b-ppl">People</label><input id="b-ppl" inputmode="numeric" value="4" autocomplete="off"></div>
+          <hr class="perf">
+          <dl class="ledger"><div><dt>Tip</dt><span class="lead"></span><dd>16.80</dd></div><div><dt>Total</dt><span class="lead"></span><dd>100.80</dd></div></dl>
+          <div class="each"><span class="label">Each pays</span><output>25.20</output></div>
+        </form></div><span class="tag">Exact: 84.00, 20%, 4 people</span></div>
+
+        <div class="frame"><div class="phone"><form class="slip" onsubmit="return false">
+          <h3>Tip calculator</h3>
+          <div class="field"><label for="c-bill">Bill</label><input id="c-bill" inputmode="decimal" value="100.00" autocomplete="off"></div>
+          <div class="field"><label for="c-tip">Tip %</label><input id="c-tip" inputmode="numeric" value="18" autocomplete="off"></div>
+          <div class="presets"><button type="button" aria-pressed="false">15%</button><button type="button" aria-pressed="true">18%</button><button type="button" aria-pressed="false">20%</button></div>
+          <div class="field"><label for="c-ppl">People</label><input id="c-ppl" inputmode="numeric" value="3" autocomplete="off"></div>
+          <hr class="perf">
+          <dl class="ledger"><div><dt>Tip</dt><span class="lead"></span><dd>18.00</dd></div><div><dt>Total</dt><span class="lead"></span><dd>118.00</dd></div></dl>
+          <div class="each"><span class="label">Each pays</span><output>39.34</output><p>Rounded up to the cent.</p></div>
+        </form></div><span class="tag">Rounded: 100.00, 18%, 3 people</span></div>
+
+        <div class="frame"><div class="phone"><form class="slip" onsubmit="return false">
+          <h3>Tip calculator</h3>
+          <div class="field"><label for="d-bill">Bill</label><input id="d-bill" inputmode="decimal" value="100.00" autocomplete="off"></div>
+          <div class="field"><label for="d-tip">Tip %</label><input id="d-tip" inputmode="numeric" value="18" autocomplete="off"></div>
+          <div class="presets"><button type="button" aria-pressed="false">15%</button><button type="button" aria-pressed="true">18%</button><button type="button" aria-pressed="false">20%</button></div>
+          <div class="field"><label for="d-ppl">People</label><input id="d-ppl" inputmode="numeric" value="0" aria-invalid="true" aria-describedby="d-msg" autocomplete="off"></div>
+          <p class="msg" id="d-msg">People: enter a whole number, 1 or more.</p>
+          <hr class="perf">
+          <dl class="ledger"><div><dt>Tip</dt><span class="lead"></span><dd></dd></div><div><dt>Total</dt><span class="lead"></span><dd></dd></div></dl>
+          <div class="each"><span class="label">Each pays</span><p>Fix People to see each share.</p></div>
+        </form></div><span class="tag">Invalid: 0 people, no NaN, no Infinity</span></div>
+
+      </div>
+      <p class="cap">The result area keeps its height in every state, so digits arriving never move the inputs under the thumb. Every number shares one right edge, so decimal points line up from the fields down to the answer.</p>
+    </div>
+  </section>
+
+  <section data-feedback="Typography">
+    <div class="sec-head"><span class="sec-name">Typography</span></div>
+    <div class="sec-body">
+      <table class="kv">
+        <tr><th>Role</th><th>Typeface</th><th>Weights</th><th>Where</th></tr>
+        <tr><td>Display</td><td>IBM Plex Mono</td><td>600</td><td>the each-pays figure only</td></tr>
+        <tr><td>Data</td><td>IBM Plex Mono</td><td>500</td><td>inputs, presets, ledger values; tabular by nature</td></tr>
+        <tr><td>Body</td><td>IBM Plex Sans</td><td>400</td><td>labels (12px caps), notes, errors (16px)</td></tr>
+      </table>
+      <div class="row-wrap" style="margin-top: 20px">
+        <div class="frame"><div class="fit"><output>39.34</output></div><span class="tag">Display, hero size at a 256px column</span></div>
+        <div class="frame"><div class="fit"><output>1234567.89</output></div><span class="tag">Ten characters: the cqw clamp keeps it inside the column</span></div>
+        <div class="frame"><div class="slip" style="width: 288px; box-sizing: border-box"><span class="label">Bill</span><br><span style="font: 500 var(--text-data)/1.2 var(--font-data)">100.00 &nbsp; 18 &nbsp; 3 &nbsp; 0123456789</span><p style="margin: 8px 0 0">Type the bill. Each share shows here.</p></div><span class="tag">Label 12px caps · data 20px · body 16px</span></div>
+      </div>
+      <p class="cap">Plex Mono is deliberate: a printed-check face, fixed-width digits so a changing figure never shakes, and the dotted zero separates 0 from O in a field a thumb is about to edit. Plex Sans carries only the quiet words. Fonts are self-hosted woff2 (about 53 KB for three files) because the page must work offline; no CDN.</p>
+    </div>
+  </section>
+
+  <section data-feedback="Color">
+    <div class="sec-head"><span class="sec-name">Color</span></div>
+    <div class="sec-body">
+      <p class="lede">Ink on paper. Blue is the pen: it marks only the answer, the preset you chose and the focus ring. Red appears only when input is invalid.</p>
+      <div class="swatches">
+        <div class="sw"><i style="background: #ece6d6"></i><b>bg</b><span>#ECE6D6 · page</span></div>
+        <div class="sw"><i style="background: #faf7ee"></i><b>surface</b><span>#FAF7EE · the slip</span></div>
+        <div class="sw"><i style="background: #1c1b18"></i><b>text</b><span>#1C1B18 · 16.1:1 on surface</span></div>
+        <div class="sw"><i style="background: #5b574c"></i><b>muted</b><span>#5B574C · 6.7:1 on surface</span></div>
+        <div class="sw"><i style="background: #14468f"></i><b>accent</b><span>#14468F · 8.5:1 on surface</span></div>
+        <div class="sw"><i style="background: #a32a1c"></i><b>danger</b><span>#A32A1C · 6.8:1 on surface</span></div>
+        <div class="sw"><i style="background: #857f6d"></i><b>line</b><span>#857F6D · 3.7:1 control edges</span></div>
+        <div class="sw"><i style="background: #d4ccb6"></i><b>rule</b><span>#D4CCB6 · hairlines, decor only</span></div>
+      </div>
+      <div class="row-wrap">
+        <div class="frame"><div class="slip" style="width: 288px; box-sizing: border-box">
+          <div class="presets"><button type="button" aria-pressed="false">15%</button><button type="button" aria-pressed="true">18%</button><button type="button" aria-pressed="false">20%</button></div>
+          <div class="field"><label for="k-ppl">People</label><input id="k-ppl" inputmode="numeric" value="2.5" aria-invalid="true" autocomplete="off"></div>
+          <p class="msg">People: enter a whole number, 1 or more.</p>
+          <dl class="ledger"><div><dt>Total</dt><span class="lead"></span><dd>118.00</dd></div></dl>
+          <div class="each"><span class="label">Each pays</span><output>39.34</output></div>
+        </div><span class="tag">In use: button row, error, data row, answer</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section data-feedback="Spacing">
+    <div class="sec-head"><span class="sec-name">Spacing</span></div>
+    <div class="sec-body">
+      <div class="sp"><em>space-1 · 4</em><i style="width: 4px"></i></div>
+      <div class="sp"><em>space-2 · 8</em><i style="width: 8px"></i></div>
+      <div class="sp"><em>space-3 · 12</em><i style="width: 12px"></i></div>
+      <div class="sp"><em>space-4 · 16</em><i style="width: 16px"></i></div>
+      <div class="sp"><em>space-6 · 24</em><i style="width: 24px"></i></div>
+      <div class="sp"><em>space-8 · 32</em><i style="width: 32px"></i></div>
+      <div class="sp"><em>space-12 · 48</em><i style="width: 48px"></i></div>
+      <div class="sp"><em>space-16 · 64</em><i style="width: 64px"></i></div>
+      <p class="cap">Page padding 16 · slip padding 24 / 16 · between fields 12 · label to field 12 · control height 48 minimum · gap between presets 8. At 320px the presets are 3 columns of about 79px, so the 15 / 18 / 20 row fits without scrolling.</p>
+    </div>
+  </section>
+
+  <section data-feedback="Radius">
+    <div class="sec-head"><span class="sec-name">Radius</span></div>
+    <div class="sec-body">
+      <div class="rad">
+        <div style="border-radius: 4px">controls · 4px</div>
+        <div style="border-radius: 2px">the slip · 2px</div>
+        <div style="border-radius: 0; border-style: dashed">nothing else · 0</div>
+      </div>
+      <p class="cap">Small, because paper has corners. No pills, no circles, no soft containers.</p>
+    </div>
+  </section>
+
+  <section data-feedback="Motion">
+    <div class="sec-head"><span class="sec-name">Motion</span></div>
+    <div class="sec-body">
+      <div class="mo" id="mo">
+        <div>micro · 100ms<span class="m1"></span></div>
+        <div>short · 150ms<span class="m2"></span></div>
+        <div>medium · 250ms<span class="m3"></span></div>
+        <div>long · 400ms<span class="m4"></span></div>
+      </div>
+      <button class="btn" type="button" id="replay">Replay</button>
+      <div class="row-wrap" style="margin-top: 16px">
+        <div class="frame"><div class="slip" style="width: 288px; box-sizing: border-box"><div class="presets"><button type="button" aria-pressed="false">15%</button><button type="button" aria-pressed="true">18%</button><button type="button" aria-pressed="false">20%</button></div></div><span class="tag">Press a preset: 100ms press, 150ms colour change</span></div>
+      </div>
+      <p class="cap">One easing: ease-out, cubic-bezier(0.2, 0, 0, 1). No springs, no bounce. Micro for press, short for colour and focus, medium for an error appearing, long unused. The result figure never animates: it changes at once, because reading it is the job. Reduced motion sets every duration to 0 and nothing depends on movement to be understood.</p>
+    </div>
+  </section>
+
+  <section data-feedback="Voice">
+    <div class="sec-head"><span class="sec-name">Voice</span></div>
+    <div class="sec-body">
+      <p class="lede"><b>Plain · exact · quiet.</b> Say what to do or what happened, in the fewest words, and never apologise or cheer.</p>
+      <table class="kv">
+        <tr><th>State</th><th>Copy</th><th>Not this</th></tr>
+        <tr><td>Empty</td><td>Type the bill. Each share shows here.</td><td>Welcome! Enter your bill to get started.</td></tr>
+        <tr><td>Invalid</td><td>People: enter a whole number, 1 or more.</td><td>Oops, that doesn't look right!</td></tr>
+        <tr><td>Rounded</td><td>Rounded up to the cent.</td><td>We've rounded for you.</td></tr>
+      </table>
+    </div>
+  </section>
+
+</main>
+<script>
+(function () {
+  "use strict";
+  var mo = document.getElementById("mo");
+  document.getElementById("replay").addEventListener("click", function () {
+    mo.classList.remove("go");
+    void mo.offsetWidth;
+    requestAnimationFrame(function () { mo.classList.add("go"); });
+  });
+})();
+</script>
+<!-- ─────────────────────── END TEMPLATE CONTENT ───────────────────────
+     Do not edit below this line. -->
+
+<div class="copybar">
+  <span class="summary" id="summary">No feedback yet</span>
+  <span class="grow"></span>
+  <button class="ghost" id="clear" type="button">Clear</button>
+  <button class="copy" id="copyBtn" type="button">Copy feedback</button>
+  <span class="copied" id="copied" hidden>Copied ✓ — paste it back to the agent</span>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "forge-feedback:" + (location.pathname || "board");
+  var store = loadStore();
+  var sections = Array.prototype.slice.call(document.querySelectorAll("section[data-feedback]"));
+
+  sections.forEach(function (sec) {
+    var name = sec.getAttribute("data-feedback") || "Section";
+    var saved = store[name] || { verdict: "", note: "" };
+    var fb = document.createElement("div");
+    fb.className = "fb";
+    fb.innerHTML =
+      '<div class="fb-chips">' +
+      '  <button type="button" class="chip love" data-v="love">Love it</button>' +
+      '  <button type="button" class="chip" data-v="ok">It\'s fine</button>' +
+      '  <button type="button" class="chip fix" data-v="fix">Needs work</button>' +
+      '</div>' +
+      '<textarea placeholder="What works, what doesn\'t, what to change for &quot;' + esc(name) + '&quot;…"></textarea>';
+    sec.appendChild(fb);
+
+    var chips = fb.querySelectorAll(".chip");
+    var ta = fb.querySelector("textarea");
+    ta.value = saved.note || "";
+    chips.forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.getAttribute("data-v") === saved.verdict));
+      c.addEventListener("click", function () {
+        var v = c.getAttribute("data-v");
+        saved.verdict = (saved.verdict === v) ? "" : v;
+        chips.forEach(function (x) { x.setAttribute("aria-pressed", String(x.getAttribute("data-v") === saved.verdict)); });
+        commit(name, saved); refresh();
+      });
+    });
+    ta.addEventListener("input", function () { saved.note = ta.value; commit(name, saved); refresh(); });
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var md = buildMarkdown();
+    copy(md).then(function () {
+      var c = document.getElementById("copied");
+      c.hidden = false; setTimeout(function () { c.hidden = true; }, 4000);
+    });
+  });
+  document.getElementById("clear").addEventListener("click", function () {
+    if (!confirmCleared()) return;
+    store = {}; saveStore();
+    sections.forEach(function (sec) {
+      var ta = sec.querySelector(".fb textarea"); if (ta) ta.value = "";
+      sec.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+    });
+    refresh();
+  });
+
+  refresh();
+
+  function refresh() {
+    var n = 0;
+    Object.keys(store).forEach(function (k) {
+      var s = store[k]; if (s && (s.verdict || (s.note && s.note.trim()))) n++;
+    });
+    document.getElementById("count").textContent = n + " of " + sections.length + " sections marked";
+    document.getElementById("summary").textContent = n ? (n + " section" + (n === 1 ? "" : "s") + " with feedback") : "No feedback yet";
+  }
+  function buildMarkdown() {
+    var title = document.querySelector(".board-title");
+    var lines = ["## Design feedback — " + (title ? title.textContent.replace(/^Design feedback — /, "") : ""), ""];
+    var any = false;
+    sections.forEach(function (sec) {
+      var name = sec.getAttribute("data-feedback");
+      var s = store[name]; if (!s || (!s.verdict && !(s.note && s.note.trim()))) return;
+      any = true;
+      var verdict = { love: "👍 Love it", ok: "• It's fine", fix: "🔧 Needs work" }[s.verdict] || "";
+      lines.push("### " + name + (verdict ? "  —  " + verdict : ""));
+      if (s.note && s.note.trim()) lines.push(s.note.trim());
+      lines.push("");
+    });
+    if (!any) lines.push("_(no per-section feedback entered)_");
+    return lines.join("\n").trim() + "\n";
+  }
+  function commit(name, val) {
+    if (!val.verdict && !(val.note && val.note.trim())) delete store[name];
+    else store[name] = val;
+    saveStore();
+  }
+  function loadStore() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+  function saveStore() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+  function confirmCleared() { return true; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+    return new Promise(function (res) {
+      var t = document.createElement("textarea"); t.value = text; document.body.appendChild(t);
+      t.select(); try { document.execCommand("copy"); } catch (e) {} document.body.removeChild(t); res();
+    });
+  }
+})();
+</script>
+</body>
+</html>

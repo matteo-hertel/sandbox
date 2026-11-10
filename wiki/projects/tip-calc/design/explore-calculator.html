@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tip-calc · the calculator screen · four variants</title>
+<style>
+  @font-face { font-family: "Plex Mono"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Plex Mono"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Plex Sans"; font-weight: 400; font-style: normal; font-display: swap; src: url("fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
+
+  /* tip-calc tokens: the locked system, DESIGN.md is the contract */
+  :root {
+    --font-display: "Plex Mono", monospace;
+    --font-data: "Plex Mono", monospace;
+    --font-body: "Plex Sans", sans-serif;
+    --text-label: 12px; --text-body: 16px; --text-data: 20px; --text-hero: min(48px, 16cqw);
+    --color-bg: #ece6d6; --color-surface: #faf7ee; --color-text: #1c1b18; --color-muted: #5b574c;
+    --color-accent: #14468f; --color-danger: #a32a1c; --color-line: #857f6d; --color-rule: #d4ccb6;
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+    --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+    --radius-control: 4px; --radius-slip: 2px;
+    --dur-micro: 100ms; --dur-short: 150ms; --dur-medium: 250ms; --dur-long: 400ms;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+    --fw: 320px; --fh: 568px; --kbh: 260px;
+  }
+  body.size-l { --fw: 390px; --fh: 844px; --kbh: 300px; }
+
+  /* board chrome */
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f2f1ed; color: #1c1b18; font: 15px/1.5 "Plex Sans", sans-serif; padding-bottom: 120px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  header.board { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid #dcdcd6; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+  header.board h1 { margin: 0; font-size: 17px; font-weight: 400; }
+  header.board .grow { flex: 1; }
+  .ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 13px; color: #5f5f5a; }
+  .ctl button, .states button { font-size: 13px; border: 1px solid #c9c9c1; background: #fff; border-radius: 4px; padding: 4px 10px; }
+  .ctl button[aria-pressed="true"], .states button[aria-pressed="true"] { background: #1c1b18; border-color: #1c1b18; color: #fff; }
+  button:focus-visible, textarea:focus-visible { outline: 2px solid #14468f; outline-offset: 2px; }
+  .lead { max-width: 1560px; margin: 24px auto 0; padding: 0 24px; display: grid; gap: 8px; }
+  .lead p { margin: 0; max-width: 92ch; }
+  .lead .small { color: #5f5f5a; font-size: 14px; }
+  main { max-width: 1560px; margin: 24px auto; padding: 0 24px; display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(calc(var(--fw) + 34px), 1fr)); align-items: start; }
+  section[data-feedback] { background: #fff; border: 1px solid #dcdcd6; border-radius: 4px; padding: 16px; display: grid; gap: 12px; align-content: start; }
+  section.overall { grid-column: 1 / -1; }
+  .sec-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .sec-head h2 { margin: 0; font-size: 16px; font-weight: 400; }
+  .sec-head .num { font: 600 16px/1 "Plex Mono", monospace; }
+  .sec-head .rec { font-size: 12px; border: 1px solid #1c1b18; border-radius: 4px; padding: 0 6px; }
+  .sec-head .axis { color: #5f5f5a; font-size: 13px; }
+  .states { display: flex; flex-wrap: wrap; gap: 4px; }
+  .state-note { margin: 0; font-size: 14px; color: #3d3c37; min-height: 42px; }
+  dl.why { margin: 0; font-size: 14px; display: grid; gap: 4px; }
+  dl.why dt { color: #5f5f5a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  dl.why dd { margin: 0; }
+  .fb { border-top: 1px dashed #c9c9c1; padding-top: 12px; display: grid; gap: 8px; }
+  .fb .chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .fb .chips button { font-size: 13px; border: 1px solid #c9c9c1; background: #fff; border-radius: 4px; padding: 4px 10px; }
+  .fb .chips button[aria-pressed="true"] { background: #1c1b18; border-color: #1c1b18; color: #fff; }
+  .fb textarea, .copybar textarea { width: 100%; min-height: 56px; resize: vertical; font: 14px/1.5 "Plex Sans", sans-serif; border: 1px solid #c9c9c1; border-radius: 4px; padding: 8px 10px; color: #1c1b18; background: #fff; }
+  .copybar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: #fff; border-top: 1px solid #dcdcd6; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .copybar .grow { flex: 1; }
+  .copybar .summary { color: #5f5f5a; font-size: 13px; }
+  .copybar .copy { background: #1c1b18; color: #fff; border: 0; border-radius: 4px; padding: 8px 16px; }
+  .copybar .clear { background: #fff; border: 1px solid #c9c9c1; border-radius: 4px; padding: 7px 12px; font-size: 13px; }
+  .copybar .fallback { flex-basis: 100%; }
+
+  /* the phone frame: a viewport of the stated size */
+  .device { position: relative; width: var(--fw); height: var(--fh); overflow: hidden; background: var(--color-bg); border: 1px solid #b9b3a2; }
+  .vp { position: absolute; inset: 0; overflow-y: auto; padding: var(--space-4); display: flex; flex-direction: column; font: 400 var(--text-body)/1.5 var(--font-body); color: var(--color-text); }
+  .device.kb .vp { bottom: var(--kbh); }
+
+  /* shared ledger-slip parts */
+  .slip { container-type: inline-size; background: var(--color-surface); border: 1px solid var(--color-rule); border-radius: var(--radius-slip); padding: var(--space-6) var(--space-4); }
+  .lbl { font: 400 var(--text-label)/1.5 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); margin: 0; }
+  .in { display: flex; align-items: center; justify-content: flex-end; min-height: 48px; padding: var(--space-2) var(--space-3); font: 500 var(--text-data)/1.2 var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-control); }
+  .in.focus { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .in.bad, .frow.bad { border-color: var(--color-danger); box-shadow: inset 0 0 0 1px var(--color-danger); }
+  .in .ph { font: 400 var(--text-body)/1.5 var(--font-body); color: var(--color-muted); }
+  .caret { display: inline-block; width: 2px; height: 1.1em; background: var(--color-text); margin-left: 1px; }
+  .msg { margin: 0 0 var(--space-3); color: var(--color-danger); }
+  .pre, .key { display: flex; align-items: center; justify-content: center; min-height: 48px; font: 500 var(--text-data)/1.2 var(--font-data); background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-line); border-radius: var(--radius-control); }
+  .pre.on { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-surface); }
+  .key.off { color: var(--color-rule); border-color: var(--color-rule); }
+  .perf { border: 0; border-top: 1px dashed var(--color-line); margin: var(--space-4) 0; }
+  .ledger { margin: 0; }
+  .ledger > div { display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-1) 0; min-height: var(--space-8); }
+  .lead-dots { flex: 1; min-width: var(--space-4); border-bottom: 1px dotted var(--color-line); }
+  .ledger dd { margin: 0; font: 500 var(--text-data)/1.2 var(--font-data); font-variant-numeric: tabular-nums; }
+  .answer { min-height: calc(var(--space-16) + var(--space-8)); }
+  .answer .lbl { display: block; }
+  .hero { display: block; text-align: right; font: 600 var(--text-hero)/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--color-accent); }
+  .note { margin: var(--space-2) 0 0; color: var(--color-muted); }
+  .hero + .note { text-align: right; }
+  .row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+  .row .in { width: 128px; }
+
+  /* 1 printed-slip: the specimen, answer last */
+  .v1 h3 { margin: 0 0 var(--space-4); }
+  .v1 .field { display: grid; grid-template-columns: 88px 1fr; align-items: center; column-gap: var(--space-3); margin-bottom: var(--space-3); }
+  .v1 .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin: 0 0 var(--space-3); }
+  .v1 .msg { margin-top: calc(var(--space-1) * -1); }
+  .v1 .ledger { margin-bottom: var(--space-4); }
+
+  /* 2 readout-first: answer pinned on top, the fields are the ledger */
+  .v2 .answer { position: sticky; top: calc(var(--space-4) * -1); z-index: 1; background: var(--color-surface); margin: calc(var(--space-6) * -1) 0 var(--space-4); padding: var(--space-6) 0 var(--space-3); border-bottom: 1px dashed var(--color-line); }
+  .v2 .tipcells { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin: var(--space-1) 0 var(--space-3); }
+  .v2 .tipcells .in { justify-content: flex-end; }
+
+  /* 3 thumb-steppers: type the bill, tap the rest */
+  .v3 .slip { padding: var(--space-4); }
+  .v3 .row:last-of-type { margin-bottom: var(--space-2); }
+  .v3 .deck { margin-top: auto; padding-top: var(--space-3); display: grid; gap: var(--space-2); }
+  .v3 .step { display: grid; grid-template-columns: 64px 48px 48px 1fr; gap: var(--space-2); align-items: center; }
+  .v3 .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin-bottom: var(--space-2); }
+
+  /* 4 own-keypad: the page draws its keys, the phone keypad never opens */
+  .v4 .slip { flex: 1; display: flex; flex-direction: column; padding: var(--space-3) var(--space-4); }
+  .v4 .answer { min-height: 0; }
+  .v4 .note { margin-top: var(--space-1); }
+  .v4 .work { margin: var(--space-1) 0 var(--space-2); text-align: right; color: var(--color-muted); }
+  .v4 .work b { font: 500 var(--text-body)/1.5 var(--font-data); color: var(--color-text); }
+  .v4 .frow { display: flex; align-items: center; gap: var(--space-2); min-height: 48px; padding: 0 var(--space-3); margin-bottom: var(--space-1); border: 1px solid var(--color-line); border-radius: var(--radius-control); }
+  .v4 .frow.on { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .v4 .frow .val { font: 500 var(--text-data)/1.2 var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .v4 .keys { margin-top: auto; padding-top: var(--space-1); display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-1); }
+
+  /* the phone's own keypad, drawn for the typing state only (not part of the design) */
+  .oskb { position: absolute; left: 0; right: 0; bottom: 0; height: var(--kbh); background: #cfd2d8; display: grid; grid-template-rows: 40px 1fr; font: 400 13px/1 "Plex Sans", sans-serif; color: #2b2e33; }
+  .oskb .bar { display: flex; justify-content: space-between; align-items: center; padding: 0 12px; background: #e4e6ea; border-top: 1px solid #b2b6be; }
+  .oskb .k { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px; }
+  .oskb .k span { display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 4px; font: 400 22px/1 "Plex Sans", sans-serif; }
+  .oskb .k span.fn { background: #aeb3bc; font-size: 14px; }
+</style>
+</head>
+<body>
+<header class="board">
+  <h1>tip-calc · the calculator screen · four variants</h1>
+  <span class="grow"></span>
+  <div class="ctl" role="group" aria-label="Frame size">Frame
+    <button type="button" data-size="s" aria-pressed="true">320 × 568</button>
+    <button type="button" data-size="l" aria-pressed="false">390 × 844</button>
+  </div>
+  <div class="ctl" role="group" aria-label="Set every variant to one state" id="setAll">All to</div>
+</header>
+
+<div class="lead">
+  <p><b>Recommended: 2 · readout-first.</b> It keeps the each-pays figure in sight above the phone keypad while you type, with the fewest controls and plain native inputs: the cheapest build, and the brief's numeric-keypad unlock still applies. <b>What would change this:</b> if you type, close the keypad and only then read, 1 · printed-slip is simpler and reads in check order; if the human-evidence gate shows the tip or head count changing more often than the bill, 3 · thumb-steppers.</p>
+  <p class="small"><b>Size.</b> The brief names a phone held in one hand and a 320px floor, so every frame is portrait. 320 × 568 is assumed (the shortest 320-wide phone, where space is tightest); 390 × 844 is a common current phone. Frames are the whole screen in CSS pixels; the browser's own bars are not drawn, so a real page has roughly 100 to 150px less height than shown. In “Typing, keypad up” the phone's keypad is drawn at about 260px (300px on the large frame).</p>
+  <p class="small"><b>Fixed, not explored:</b> the ledger-slip system in DESIGN.md (type, colour, spacing, radius, motion). The variants change the shape: where the answer sits, how tip and people go in, and whether the phone keypad opens. Mockups are static; switch states with the buttons. Every figure is computed with the brief's rule: integer cents, tip to the nearest cent, each share rounded up.</p>
+</div>
+
+<main id="board">
+  <section data-feedback="Variant 1 · printed-slip" data-v="v1">
+    <div class="sec-head"><span class="num">1</span><h2>printed-slip</h2><span class="axis">answer last, read top to bottom</span></div>
+    <div class="states" role="group" aria-label="States for printed-slip"></div>
+    <div class="device"><div class="vp"></div></div>
+    <p class="state-note"></p>
+    <dl class="why">
+      <dt>Optimizes for</dt><dd>Reading it like the check: bill, tip, total, then each, so the rounding line sits under the arithmetic that caused it.</dd>
+      <dt>Costs</dt><dd>The answer is the last row. On a 320 × 568 phone the keypad hides it while you type, so it only "changes under your thumb" after you close the keypad; on 390 × 844 the figure just clears the keypad. At 320 × 568 the page only just fits: a rounding note makes it 3px too tall, an error message 43px.</dd>
+      <dt>First runnable version</dt><dd>The specimen's slip as one HTML file: three inputs, the preset row and a pure calc(); no new layout work.</dd>
+    </dl>
+  </section>
+
+  <section data-feedback="Variant 2 · readout-first" data-v="v2">
+    <div class="sec-head"><span class="num">2</span><h2>readout-first</h2><span class="rec">recommended</span><span class="axis">answer pinned on top, fields are the ledger</span></div>
+    <div class="states" role="group" aria-label="States for readout-first"></div>
+    <div class="device"><div class="vp"></div></div>
+    <p class="state-note"></p>
+    <dl class="why">
+      <dt>Optimizes for</dt><dd>The memorable thing: the each-pays figure sits above every field and stays pinned, so it is visible over the phone keypad and changes with each digit.</dd>
+      <dt>Costs</dt><dd>The answer reads before its working (tip and total sit under the fields, not above the answer). The tip row packs three presets and the free field into one 4-up row of 58px cells at 320, the tightest fit on the page. The pinned readout keeps 96 to 150px of the roughly 300px left above the keypad on a 320 × 568 phone.</dd>
+      <dt>First runnable version</dt><dd>One page with native inputs (inputmode decimal and numeric), the readout as the first block with position: sticky, the same calc() as 1.</dd>
+    </dl>
+  </section>
+
+  <section data-feedback="Variant 3 · thumb-steppers" data-v="v3">
+    <div class="sec-head"><span class="num">3</span><h2>thumb-steppers</h2><span class="axis">type the bill once, tap tip and people</span></div>
+    <div class="states" role="group" aria-label="States for thumb-steppers"></div>
+    <div class="device"><div class="vp"></div></div>
+    <p class="state-note"></p>
+    <dl class="why">
+      <dt>Optimizes for</dt><dd>The brief's friction, re-typing when the tip or head count changes: after the bill, tip and people are minus and plus keys and presets in the bottom thumb zone, with no keypad.</dd>
+      <dt>Costs</dt><dd>Twice the controls (four step keys, three presets, three fields). From 18 to 25% is seven taps unless you type into the field. On a 390 × 844 phone the answer and the controls are about 490px apart.</dd>
+      <dt>First runnable version</dt><dd>Variant 2's page plus two stepper groups that write into the same fields; minus on People stops at 1.</dd>
+    </dl>
+  </section>
+
+  <section data-feedback="Variant 4 · own-keypad" data-v="v4">
+    <div class="sec-head"><span class="num">4</span><h2>own-keypad</h2><span class="axis">calculator keys on the page</span></div>
+    <div class="states" role="group" aria-label="States for own-keypad"></div>
+    <div class="device"><div class="vp"></div></div>
+    <p class="state-note"></p>
+    <dl class="why">
+      <dt>Optimizes for</dt><dd>"Like the phone's built-in Calculator": the page draws its own keys, so the phone keypad never opens, nothing jumps, and the answer and all three values stay on screen.</dd>
+      <dt>Costs</dt><dd>The most build: the keys replace native input, so screen readers, hardware keyboards, paste and the caret all need work by hand, and the brief's inputmode unlock no longer applies. At 320 × 568 it fills the screen to the pixel; an error message pushes the bottom key row 22px out of view.</dd>
+      <dt>First runnable version</dt><dd>Three row buttons (a radio group) choosing the active value, a 4 × 4 key grid appending to that value's string, the same calc().</dd>
+    </dl>
+  </section>
+
+  <section class="overall" data-feedback="Overall">
+    <div class="sec-head"><h2>None of these?</h2><span class="axis">Say which axis to try instead (density, input model, where the answer sits) and the next round starts there.</span></div>
+  </section>
+</main>
+
+<div class="copybar">
+  <span class="summary" id="summary">No feedback yet</span>
+  <span class="grow"></span>
+  <button type="button" class="clear" id="clear">Clear</button>
+  <button type="button" class="copy" id="copyBtn">Copy feedback</button>
+  <span id="copied" hidden>Copied. Paste it back to the agent.</span>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STATES = [
+    { id: "empty", label: "Empty", bill: "", tip: "", people: "" },
+    { id: "partial", label: "Part-filled", bill: "64.50", tip: "18", people: "" },
+    { id: "exact", label: "Exact split", bill: "84.00", tip: "20", people: "4" },
+    { id: "rounded", label: "Rounded up", bill: "100.00", tip: "18", people: "3" },
+    { id: "invalid", label: "Invalid", bill: "52.80", tip: "15", people: "2.5" },
+    { id: "large", label: "Large table", bill: "1248.60", tip: "22", people: "14" },
+    { id: "typing", label: "Typing, keypad up", bill: "64.5", tip: "18", people: "3", focus: "bill" }
+  ];
+  var NOTES = {
+    empty: "Nothing typed. Blank rows stay blank, never 0.00; the answer area says what to do.",
+    partial: "Bill 64.50 at 18%, head count blank: tip and total show, the share waits for People.",
+    exact: "84.00 at 20% for 4 divides to the cent, so there is no rounding line.",
+    rounded: "118.00 for 3 is 39.333…: each share rounds up to 39.34 and the line shows the 2 cents over.",
+    invalid: "People 2.5: the field turns red and says what to fix; tip and total still show; no NaN.",
+    large: "1248.60 at a typed 22% (no preset lit) for 14: a four-digit total, 5 cents over."
+  };
+  var VARIANTS = {
+    v1: { render: renderV1, oskb: true, notes: {
+      typing: "Typing the bill (64.5): on 320 × 568 the phone keypad covers the answer (25.37) until you close it. On 390 × 844 the figure just clears the keypad, before the browser's own bars."
+    } },
+    v2: { render: renderV2, oskb: true, notes: {
+      typing: "Typing the bill (64.5): the answer, 25.37, stays above the phone keypad and changes with each digit."
+    } },
+    v3: { render: renderV3, oskb: true, notes: {
+      typing: "Typing the bill (64.5): the answer stays in view; on 320 × 568 the phone keypad covers the steppers. Tip and people never open the keypad."
+    } },
+    v4: { render: renderV4, oskb: false, overrides: { invalid: { people: "0" } }, notes: {
+      invalid: "People 0 (the point key is greyed for People, so 2.5 cannot be typed): the row turns red; no Infinity.",
+      typing: "Typing the bill (64.5) on the page's own keys: no phone keypad, so the answer and all three values stay on screen."
+    } }
+  };
+
+  function cents(str) {
+    var m = /^(\d{1,7})(?:\.(\d{0,2}))?$/.exec(str);
+    if (!m) return null;
+    return Number(m[1]) * 100 + Number(((m[2] || "") + "00").slice(0, 2));
+  }
+  function calc(s) {
+    var r = { err: {}, bill: null, pct: null, people: null, tipC: null, totalC: null, each: null, collected: null, msg: "" };
+    if (s.bill !== "") { r.bill = cents(s.bill); if (r.bill === null) r.err.bill = "Bill: enter an amount, like 64.50."; }
+    if (s.tip !== "") { r.pct = /^\d{1,3}$/.test(s.tip) ? Number(s.tip) : null; if (r.pct === null) r.err.tip = "Tip: enter a whole percent, like 18."; }
+    if (s.people !== "") {
+      r.people = /^\d{1,3}$/.test(s.people) && Number(s.people) >= 1 ? Number(s.people) : null;
+      if (r.people === null) r.err.people = "People: enter a whole number, 1 or more.";
+    }
+    if (r.bill !== null) {
+      r.tipC = r.pct === null ? null : Math.round(r.bill * r.pct / 100);
+      r.totalC = r.bill + (r.tipC || 0);
+    }
+    if (r.totalC !== null && r.people !== null) {
+      r.each = Math.ceil(r.totalC / r.people);
+      r.collected = r.each * r.people;
+      if (r.collected !== r.totalC) r.msg = "Rounded up to the cent.<br>" + r.people + " × " + money(r.each) + " = " + money(r.collected);
+    } else if (r.err.people) r.msg = "Fix the head count to see each share.";
+    else if (r.bill === null) r.msg = "Type the bill. Each share shows here.";
+    else r.msg = "Type the head count. Each share shows here.";
+    return r;
+  }
+  function money(c) { return c === null ? "" : Math.floor(c / 100) + "." + ("0" + (c % 100)).slice(-2); }
+
+  function text(s, key) { return s[key] + (s.focus === key ? '<i class="caret"></i>' : ""); }
+  function cls(s, r, key) { return "in" + (s.focus === key ? " focus" : "") + (r.err[key] ? " bad" : ""); }
+  function msg(r, key) { return r.err[key] ? '<p class="msg">' + r.err[key] + "</p>" : ""; }
+  function answer(r) {
+    return '<div class="answer"><span class="lbl">Each pays</span>' +
+      (r.each !== null ? '<output class="hero">' + money(r.each) + "</output>" : "") +
+      (r.msg ? '<p class="note">' + r.msg + "</p>" : "") + "</div>";
+  }
+  function ledger(r) {
+    return '<dl class="ledger">' +
+      '<div><dt class="lbl">Tip</dt><span class="lead-dots"></span><dd>' + money(r.tipC) + "</dd></div>" +
+      '<div><dt class="lbl">Total</dt><span class="lead-dots"></span><dd>' + money(r.totalC) + "</dd></div></dl>";
+  }
+  function presets(s, suffix) {
+    return ["15", "18", "20"].map(function (p) {
+      return '<span class="pre' + (s.tip === p ? " on" : "") + '">' + p + suffix + "</span>";
+    }).join("");
+  }
+  function row(s, r, key, label) {
+    return '<div class="row"><span class="lbl">' + label + '</span><span class="lead-dots"></span><span class="' + cls(s, r, key) + '">' + text(s, key) + "</span></div>" + msg(r, key);
+  }
+
+  function renderV1(s, r) {
+    function field(key, label) {
+      return '<div class="field"><span class="lbl">' + label + '</span><span class="' + cls(s, r, key) + '">' + text(s, key) + "</span></div>" + msg(r, key);
+    }
+    return '<div class="slip"><h3 class="lbl">Tip calculator</h3>' +
+      field("bill", "Bill") + field("tip", "Tip %") +
+      '<div class="presets">' + presets(s, "%") + "</div>" +
+      field("people", "People") +
+      '<hr class="perf">' + ledger(r) + answer(r) + "</div>";
+  }
+  function renderV2(s, r) {
+    var isPreset = ["15", "18", "20"].indexOf(s.tip) !== -1;
+    var other = isPreset || s.tip === "" ? '<span class="ph">other</span>' : text(s, "tip");
+    return '<div class="slip">' + answer(r) +
+      row(s, r, "bill", "Bill") +
+      '<p class="lbl">Tip %</p><div class="tipcells">' + presets(s, "%") +
+      '<span class="' + cls(s, r, "tip") + '">' + other + "</span></div>" + msg(r, "tip") +
+      row(s, r, "people", "People") +
+      '<hr class="perf">' + ledger(r) + "</div>";
+  }
+  function renderV3(s, r) {
+    function step(key, label) {
+      return '<div class="step"><span class="lbl">' + label + '</span><span class="key">−</span><span class="key">+</span><span class="' + cls(s, r, key) + '">' + text(s, key) + "</span></div>" + msg(r, key);
+    }
+    return '<div class="slip">' + answer(r) + '<hr class="perf">' + row(s, r, "bill", "Bill") + ledger(r) + "</div>" +
+      '<div class="deck">' + step("tip", "Tip %") + '<div class="presets">' + presets(s, "%") + "</div>" + step("people", "People") + "</div>";
+  }
+  function renderV4(s, r) {
+    var active = s.focus || ["bill", "tip", "people"].filter(function (k) { return r.err[k] || s[k] === ""; })[0] || "bill";
+    function frow(key, label) {
+      return '<div class="frow' + (active === key ? " on" : "") + (r.err[key] ? " bad" : "") + '"><span class="lbl">' + label +
+        '</span><span class="lead-dots"></span><span class="val">' + text(s, key) + "</span></div>" + msg(r, key);
+    }
+    var work = r.totalC === null ? "" : '<p class="work">Tip <b>' + (money(r.tipC) || "0.00") + "</b> · Total <b>" + money(r.totalC) + "</b></p>";
+    var keys = ["1", "2", "3", "15%", "4", "5", "6", "18%", "7", "8", "9", "20%", ".", "0", "del", "C"].map(function (k) {
+      var on = /%$/.test(k) && s.tip === k.slice(0, -1);
+      var off = k === "." && active !== "bill";
+      return '<span class="' + (/%$/.test(k) ? "pre" : "key") + (on ? " on" : "") + (off ? " off" : "") + '">' + k + "</span>";
+    }).join("");
+    return '<div class="slip">' + answer(r) + work +
+      frow("bill", "Bill") + frow("tip", "Tip %") + frow("people", "People") +
+      '<div class="keys">' + keys + "</div></div>";
+  }
+
+  var OSKB = '<div class="oskb" aria-hidden="true"><div class="bar"><span>phone keypad</span><span>Done</span></div><div class="k">' +
+    ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"].map(function (k) {
+      return '<span' + (k === "." || k === "del" ? ' class="fn"' : "") + ">" + k + "</span>";
+    }).join("") + "</div></div>";
+
+  var sections = Array.prototype.slice.call(document.querySelectorAll("section[data-v]"));
+
+  function show(sec, stateId) {
+    var v = VARIANTS[sec.getAttribute("data-v")];
+    var base = STATES.filter(function (x) { return x.id === stateId; })[0] || STATES[0];
+    var s = Object.assign({}, base, (v.overrides || {})[base.id] || {});
+    var device = sec.querySelector(".device");
+    var keypad = base.id === "typing" && v.oskb;
+    sec.setAttribute("data-state", base.id);
+    device.classList.toggle("kb", keypad);
+    var old = device.querySelector(".oskb");
+    if (old) old.remove();
+    var vp = device.querySelector(".vp");
+    vp.className = "vp " + sec.getAttribute("data-v");
+    vp.innerHTML = v.render(s, calc(s));
+    if (keypad) device.insertAdjacentHTML("beforeend", OSKB);
+    sec.querySelector(".state-note").textContent = v.notes[base.id] || NOTES[base.id];
+    sec.querySelectorAll(".states button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-state") === base.id));
+    });
+  }
+  function stateButtons(container, onPick) {
+    STATES.forEach(function (st) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = st.label;
+      b.setAttribute("data-state", st.id);
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", function () { onPick(st.id); });
+      container.appendChild(b);
+    });
+  }
+  function showAll(id) { sections.forEach(function (sec) { show(sec, id); }); }
+  function setSize(size) {
+    document.body.classList.toggle("size-l", size === "l");
+    document.querySelectorAll("[data-size]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-size") === size));
+    });
+  }
+
+  sections.forEach(function (sec) {
+    stateButtons(sec.querySelector(".states"), function (id) { show(sec, id); });
+  });
+  stateButtons(document.getElementById("setAll"), showAll);
+  document.querySelectorAll("[data-size]").forEach(function (b) {
+    b.addEventListener("click", function () { setSize(b.getAttribute("data-size")); });
+  });
+  var hash = {};
+  location.hash.replace(/^#/, "").split("&").forEach(function (kv) { var p = kv.split("="); if (p[0]) hash[p[0]] = p[1]; });
+  setSize(hash.size === "l" ? "l" : "s");
+  showAll(STATES.some(function (x) { return x.id === hash.state; }) ? hash.state : "rounded");
+
+  /* feedback: one verdict and a note per section, copied out as markdown */
+  var KEY = "forge-feedback:tip-calc:explore-calculator";
+  var VERDICTS = { build: "Build this", parts: "Parts of it", no: "Not this" };
+  var store = load();
+  var fbSections = Array.prototype.slice.call(document.querySelectorAll("section[data-feedback]"));
+
+  fbSections.forEach(function (sec) {
+    var name = sec.getAttribute("data-feedback");
+    var saved = store[name] && typeof store[name] === "object" ? store[name] : { verdict: "", note: "" };
+    var fb = document.createElement("div");
+    fb.className = "fb";
+    var chips = document.createElement("div");
+    chips.className = "chips";
+    if (sec.hasAttribute("data-v")) {
+      Object.keys(VERDICTS).forEach(function (k) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = VERDICTS[k];
+        b.setAttribute("data-verdict", k);
+        b.setAttribute("aria-pressed", String(saved.verdict === k));
+        b.addEventListener("click", function () {
+          saved.verdict = saved.verdict === k ? "" : k;
+          chips.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x.getAttribute("data-verdict") === saved.verdict)); });
+          commit(name, saved);
+        });
+        chips.appendChild(b);
+      });
+      fb.appendChild(chips);
+    }
+    var ta = document.createElement("textarea");
+    ta.setAttribute("aria-label", "Feedback on " + name);
+    ta.placeholder = "What works, what doesn't, what to change";
+    ta.value = typeof saved.note === "string" ? saved.note : "";
+    ta.addEventListener("input", function () { saved.note = ta.value; commit(name, saved); });
+    fb.appendChild(ta);
+    sec.appendChild(fb);
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var md = markdown();
+    copy(md).then(function (ok) {
+      var bar = document.querySelector(".copybar");
+      var old = bar.querySelector(".fallback");
+      if (old) old.remove();
+      if (ok) {
+        var c = document.getElementById("copied");
+        c.hidden = false;
+        setTimeout(function () { c.hidden = true; }, 4000);
+        return;
+      }
+      var t = document.createElement("textarea");
+      t.className = "fallback";
+      t.readOnly = true;
+      t.value = md;
+      t.setAttribute("aria-label", "Copying is blocked here: select this text and copy it");
+      bar.appendChild(t);
+      t.focus();
+      t.select();
+    });
+  });
+  document.getElementById("clear").addEventListener("click", function () {
+    store = {};
+    save();
+    document.querySelectorAll(".fb textarea").forEach(function (t) { t.value = ""; });
+    document.querySelectorAll(".fb .chips button").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+    refresh();
+  });
+  refresh();
+
+  function commit(name, val) {
+    if (!val.verdict && !(val.note && val.note.trim())) delete store[name];
+    else store[name] = { verdict: val.verdict, note: val.note };
+    save();
+    refresh();
+  }
+  function refresh() {
+    var n = Object.keys(store).length;
+    document.getElementById("summary").textContent = n ? n + " of " + fbSections.length + " sections with feedback" : "No feedback yet";
+  }
+  function markdown() {
+    var lines = ["## Design feedback: tip-calc, the calculator screen", ""];
+    fbSections.forEach(function (sec) {
+      var name = sec.getAttribute("data-feedback");
+      var s = store[name];
+      if (!s) return;
+      lines.push("### " + name + (VERDICTS[s.verdict] ? ": " + VERDICTS[s.verdict] : ""));
+      if (s.note && s.note.trim()) lines.push(s.note.trim());
+      lines.push("");
+    });
+    if (lines.length === 2) lines.push("(no feedback entered)");
+    return lines.join("\n").trim() + "\n";
+  }
+  function load() {
+    try {
+      var v = JSON.parse(localStorage.getItem(KEY) || "{}");
+      return v && typeof v === "object" && !Array.isArray(v) ? v : {};
+    } catch (e) { return {}; }
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* storage blocked: feedback lives for this visit only */ } }
+  function copy(md) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(md).then(function () { return true; }, function () { return legacyCopy(md); });
+      }
+    } catch (e) { /* clipboard API blocked in a sandboxed frame */ }
+    return Promise.resolve(legacyCopy(md));
+  }
+  function legacyCopy(md) {
+    var t = document.createElement("textarea");
+    t.value = md;
+    t.setAttribute("readonly", "");
+    t.style.position = "fixed";
+    t.style.opacity = "0";
+    document.body.appendChild(t);
+    t.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(t);
+    return ok;
+  }
+})();
+</script>
+</body>
+</html>
