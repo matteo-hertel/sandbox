@@ -112,6 +112,54 @@
     border-color: var(--color-danger);
     box-shadow: inset 0 0 0 1px var(--color-danger);
   }
+
+  .tip-field { margin-bottom: var(--space-3); }
+  .tip-field > label {
+    display: block;
+    margin: 0 0 var(--space-2);
+    font: 400 var(--text-label)/1.5 var(--font-body);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .tip-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .preset,
+  .tip-row input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--space-12);
+    padding: var(--space-2);
+    font: 500 var(--text-data)/1.2 var(--font-data);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-control);
+  }
+  .preset { text-align: center; }
+  .tip-row input {
+    text-align: right;
+    transition: border-color var(--dur-short) var(--ease), box-shadow var(--dur-short) var(--ease);
+  }
+  .preset:focus,
+  .tip-row input:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .tip-row input[aria-invalid="true"] {
+    border-color: var(--color-danger);
+    box-shadow: inset 0 0 0 1px var(--color-danger);
+  }
+  .preset[aria-pressed="true"] {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-surface);
+  }
+
   .msg {
     margin: calc(var(--space-2) * -1) 0 var(--space-3);
     color: var(--color-danger);
@@ -183,9 +231,14 @@
         </div>
         <p class="msg" id="bill-msg" hidden></p>
 
-        <div class="field">
-          <label for="tip">Tip %</label>
-          <input id="tip" autocomplete="off" inputmode="numeric">
+        <div class="tip-field">
+          <label for="tip" id="tip-label">Tip %</label>
+          <div class="tip-row" role="group" aria-labelledby="tip-label">
+            <button type="button" class="preset" id="preset-15">15%</button>
+            <button type="button" class="preset" id="preset-18">18%</button>
+            <button type="button" class="preset" id="preset-20">20%</button>
+            <input id="tip" autocomplete="off" inputmode="numeric">
+          </div>
         </div>
         <p class="msg" id="tip-msg" hidden></p>
 
@@ -218,6 +271,10 @@
     var billInput = document.getElementById("bill");
     var tipInput = document.getElementById("tip");
     var peopleInput = document.getElementById("people");
+
+    var presetButtons = [15, 18, 20].map(function (percent) {
+      return { percent: percent, el: document.getElementById("preset-" + percent) };
+    });
 
     var billMsg = document.getElementById("bill-msg");
     var tipMsg = document.getElementById("tip-msg");
@@ -273,6 +330,13 @@
       setFieldState(tipInput, tipMsg, "tip", result.invalid);
       setFieldState(peopleInput, peopleMsg, "people", result.invalid);
 
+      var tipBlank = trimmed.tip === "";
+      var tipInvalid = result.invalid.indexOf("tip") !== -1;
+      presetButtons.forEach(function (preset) {
+        var pressed = !tipBlank && !tipInvalid && Number(trimmed.tip) === preset.percent;
+        preset.el.setAttribute("aria-pressed", pressed ? "true" : "false");
+      });
+
       var firstBad = null;
       for (var i = 0; i < FIELD_ORDER.length; i++) {
         var name = FIELD_ORDER[i];
@@ -309,6 +373,12 @@
     billInput.addEventListener("input", render);
     tipInput.addEventListener("input", render);
     peopleInput.addEventListener("input", render);
+    presetButtons.forEach(function (preset) {
+      preset.el.addEventListener("click", function () {
+        tipInput.value = String(preset.percent);
+        render();
+      });
+    });
     window.addEventListener("pageshow", render);
     render();
   })();
