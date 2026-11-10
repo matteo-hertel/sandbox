@@ -91,6 +91,43 @@ async function assertClean(page, tracker) {
   assert.deepStrictEqual(tracker.pageErrors, []);
 }
 
+async function settle(page) {
+  await page.evaluate(() => document.fonts.ready);
+}
+
+async function textBox(page, selector) {
+  return page.locator(selector).evaluate((el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    return range.getBoundingClientRect().toJSON();
+  });
+}
+
+const FACES = [
+  { family: "Plex Mono", weight: "500", file: "ibm-plex-mono-latin-500-normal.woff2" },
+  { family: "Plex Mono", weight: "600", file: "ibm-plex-mono-latin-600-normal.woff2" },
+  { family: "Plex Sans", weight: "400", file: "ibm-plex-sans-latin-400-normal.woff2" },
+];
+
+async function faceMatchesFile(page, face) {
+  return page.evaluate(async ({ family, weight, file }) => {
+    const ref = new FontFace("reference-face", `url(fonts/${file})`, { weight });
+    document.fonts.add(await ref.load());
+    const draw = (name) => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 480;
+      canvas.height = 64;
+      const ctx = canvas.getContext("2d");
+      ctx.font = `${weight} 40px "${name}"`;
+      ctx.fillText("Each 1999.98 Tip", 0, 48);
+      return ctx.getImageData(0, 0, canvas.width, canvas.height).data.join();
+    };
+    const same = draw(family) === draw("reference-face");
+    document.fonts.delete(ref);
+    return same;
+  }, face);
+}
+
 async function setFields(page, { bill, tip, people }) {
   await page.fill("#bill", bill === undefined ? "" : bill);
   await page.fill("#tip", tip === undefined ? "" : tip);
@@ -148,10 +185,13 @@ test("offline load: no network, no console/page errors, empty state, fonts, work
 
     await setFields(page, { bill: "100", tip: "18", people: "3" });
 
-    await page.evaluate(() => document.fonts.ready);
-    const faces = await page.evaluate(() => Array.from(document.fonts).map((f) => ({ family: f.family, weight: f.weight, status: f.status })));
-    assert.equal(faces.length, 3);
-    for (const face of faces) assert.equal(face.status, "loaded", JSON.stringify(face));
+    await settle(page);
+    const faces = await page.evaluate(() => Array.from(document.fonts).map((f) => ({ family: f.family.replace(/"/g, ""), weight: f.weight, status: f.status })));
+    assert.deepStrictEqual(
+      faces.sort((a, b) => (a.family + a.weight).localeCompare(b.family + b.weight)),
+      FACES.map(({ family, weight }) => ({ family, weight, status: "loaded" }))
+    );
+    for (const face of FACES) assert.ok(await faceMatchesFile(page, face), `${face.family} ${face.weight} must render from ${face.file}`);
 
     readout = await readoutState(page);
     assert.equal(readout.figureHidden, false);
@@ -164,9 +204,9 @@ test("offline load: no network, no console/page errors, empty state, fonts, work
     assert.equal(await page.textContent(".rounding-line"), "Rounded up to the cent.");
     assert.equal(await page.textContent("#rounding-detail"), "3 × 39.34 = 118.02");
 
-    const roundingBox = await page.locator("#rounding-detail").boundingBox();
-    const totalBox = await page.locator("#total-amount").boundingBox();
-    assert.ok(Math.abs(roundingBox.x + roundingBox.width - (totalBox.x + totalBox.width)) <= 1, "collected and total right edges align within 1px");
+    const collectedText = await textBox(page, "#rounding-detail");
+    const totalText = await textBox(page, "#total-amount");
+    assert.ok(Math.abs(collectedText.right - totalText.right) <= 1, `118.02 and 118.00 text right edges align within 1px: ${JSON.stringify({ collectedText, totalText })}`);
 
     await page.focus("#people");
     await page.keyboard.press("Enter");
@@ -204,12 +244,16 @@ test("offline load: no network, no console/page errors, empty state, fonts, work
     readout = await readoutState(page);
     assert.equal(readout.figureText, "1999999.98");
 
+    await settle(page);
     const figureMetrics = await page.locator("#each-figure").evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
     assert.ok(figureMetrics.scrollWidth <= figureMetrics.clientWidth, JSON.stringify(figureMetrics));
     const figureBox = await page.locator("#each-figure").boundingBox();
+    const figureText = await textBox(page, "#each-figure");
     const readoutBox = await page.locator(".readout").boundingBox();
     assert.ok(contains(readoutBox, figureBox), "figure box must be inside the readout box");
+    assert.ok(contains(readoutBox, figureText), `figure text must be inside the readout box: ${JSON.stringify({ figureText, readoutBox })}`);
 
+    assert.equal(await page.inputValue("#bill"), "999999.99");
     const billMetrics = await page.locator("#bill").evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
     assert.ok(billMetrics.scrollWidth <= billMetrics.clientWidth, JSON.stringify(billMetrics));
 
@@ -224,18 +268,22 @@ test("Bill field's top edge does not move across empty, part-filled, rounded and
   try {
     await page.goto(PAGE_URL);
     await page.evaluate(() => window.scrollTo(0, 0));
+    await settle(page);
     const emptyTop = (await page.locator("#bill").boundingBox()).y;
 
     await page.fill("#bill", "64.50");
     await page.evaluate(() => window.scrollTo(0, 0));
+    await settle(page);
     const partFilledTop = (await page.locator("#bill").boundingBox()).y;
 
     await setFields(page, { bill: "100", tip: "18", people: "3" });
     await page.evaluate(() => window.scrollTo(0, 0));
+    await settle(page);
     const roundedTop = (await page.locator("#bill").boundingBox()).y;
 
     await setFields(page, { bill: "1.234", tip: "18", people: "3" });
     await page.evaluate(() => window.scrollTo(0, 0));
+    await settle(page);
     const invalidTop = (await page.locator("#bill").boundingBox()).y;
 
     assert.equal(partFilledTop, emptyTop);
@@ -257,6 +305,7 @@ test("320x208 keypad-up geometry: readout and the focused field stay whole and a
     for (const id of ["bill", "tip", "people"]) {
       await page.focus("#" + id);
       await page.waitForTimeout(50);
+      await settle(page);
       const readoutBox = await page.locator(".readout").boundingBox();
       const fieldBox = await page.locator("#" + id).boundingBox();
       assert.ok(within(readoutBox, 320, 208), `readout must be in the 320x208 viewport while ${id} is focused: ${JSON.stringify(readoutBox)}`);
@@ -331,7 +380,7 @@ test("the Words table: each row shows exactly its readout note and messages, no 
     await page.goto(PAGE_URL);
     for (const row of WORD_ROWS) {
       await setFields(page, row);
-      await page.evaluate(() => document.fonts.ready);
+      await settle(page);
       const readout = await readoutState(page);
       assert.equal(readout.figureHidden, true, JSON.stringify(row));
       assert.equal(readout.noteText, row.note, JSON.stringify(row));
@@ -353,7 +402,7 @@ test("the Words table: each row shows exactly its readout note and messages, no 
 
       const readoutBox = await page.locator(".readout").boundingBox();
       const noteBox = await page.locator("#each-note").boundingBox();
-      assert.ok(Math.abs(readoutBox.height - 96) <= EPS, `readout must be 96px tall: ${readoutBox.height}`);
+      assert.equal(readoutBox.height, 96, `readout must be 96px tall for ${JSON.stringify(row)}`);
       assert.ok(contains(readoutBox, noteBox), `note box must be inside the readout box for ${JSON.stringify(row)}`);
     }
 
@@ -436,6 +485,7 @@ test("access: lang, title, labels, tab order, aria wiring, status role, backgrou
     await page.getByText("People", { exact: true }).click();
     assert.equal(await page.evaluate(() => document.activeElement.id), "people");
 
+    await settle(page);
     for (const id of ["bill", "tip", "people"]) {
       assert.equal(await page.getAttribute("#" + id, "autocomplete"), "off");
       const box = await page.locator("#" + id).boundingBox();
@@ -501,6 +551,7 @@ test("320x208: underlying content does not cover the readout figure when People 
     await setFields(page, { bill: "100", tip: "18", people: "3" });
     await page.focus("#people");
     await page.waitForTimeout(50);
+    await settle(page);
 
     const hit = await page.evaluate(() => {
       const figure = document.getElementById("each-figure");
@@ -511,6 +562,21 @@ test("320x208: underlying content does not cover the readout figure when People 
       return Boolean(el && el.closest(".readout"));
     });
     assert.ok(hit, "the element at the figure's centre must be inside the readout");
+
+    await assertClean(page, tracker);
+  } finally {
+    await context.close();
+  }
+});
+
+test("a wider screen keeps the column at 390px", async () => {
+  const { context, page, tracker } = await openPage({ viewport: { width: 768, height: 1024 } });
+  try {
+    await page.goto(PAGE_URL);
+    await settle(page);
+    const column = await page.locator(".page").boundingBox();
+    assert.equal(column.x, 0);
+    assert.equal(column.width, 390);
 
     await assertClean(page, tracker);
   } finally {

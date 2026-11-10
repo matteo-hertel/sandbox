@@ -88,26 +88,43 @@ test("bill and tip, no people: tip and total set, each null", () => {
 });
 
 test("bill and people, no tip: all null", () => {
-  const r = calc({ bill: "64.50", tip: "", people: "3" });
-  assert.equal(r.tipCents, null);
-  assert.equal(r.totalCents, null);
-  assert.equal(r.eachCents, null);
-  assert.equal(r.collectedCents, null);
+  assert.deepStrictEqual(calc({ bill: "64.50", tip: "", people: "3" }), {
+    tipCents: null,
+    totalCents: null,
+    eachCents: null,
+    collectedCents: null,
+    invalid: [],
+  });
 });
 
 test("tip and people, no bill: all null", () => {
-  const r = calc({ bill: "", tip: "18", people: "3" });
-  assert.equal(r.tipCents, null);
-  assert.equal(r.totalCents, null);
-  assert.equal(r.eachCents, null);
-  assert.equal(r.collectedCents, null);
+  assert.deepStrictEqual(calc({ bill: "", tip: "18", people: "3" }), {
+    tipCents: null,
+    totalCents: null,
+    eachCents: null,
+    collectedCents: null,
+    invalid: [],
+  });
 });
 
-test("a field of spaces only is blank, not zero", () => {
-  const r = calc({ bill: "   ", tip: "18", people: "3" });
-  assert.deepStrictEqual(r.invalid, []);
-  assert.equal(r.tipCents, null);
-  assert.equal(r.totalCents, null);
+test("a field of spaces only is blank, not zero, in every field", () => {
+  const filled = { bill: "64.50", tip: "18", people: "3" };
+  for (const field of ["bill", "tip", "people"]) {
+    for (const spaces of [" ", "   ", "\t", " \n "]) {
+      const label = `${field}=${JSON.stringify(spaces)}`;
+      const r = calc({ ...filled, [field]: spaces });
+      assert.deepStrictEqual(r, calc({ ...filled, [field]: "" }), label);
+      assert.deepStrictEqual(r.invalid, [], label);
+      assert.equal(r.eachCents, null, label);
+    }
+  }
+  assert.deepStrictEqual(calc({ bill: "  ", tip: "  ", people: "  " }), {
+    tipCents: null,
+    totalCents: null,
+    eachCents: null,
+    collectedCents: null,
+    invalid: [],
+  });
 });
 
 const HOSTILE_BILLS = ["-5", "1e308", "NaN", "Infinity", "1.234", "1,248.60", "1000000", ".", "0x10"];
@@ -147,26 +164,45 @@ for (const people of HOSTILE_PEOPLE) {
   });
 }
 
-test("every field invalid at once lists all three, bill/tip/people order", () => {
-  const r = calc({ bill: "1.234", tip: "101", people: "0" });
-  assert.deepStrictEqual(r.invalid, ["bill", "tip", "people"]);
-  assert.equal(r.tipCents, null);
-  assert.equal(r.totalCents, null);
-  assert.equal(r.eachCents, null);
-  assert.equal(r.collectedCents, null);
-});
+const SWEEP = {
+  bill: { blank: ["", "  "], valid: ["64.50", "64,50", ".5", "999999.99"], hostile: HOSTILE_BILLS },
+  tip: { blank: ["", "  "], valid: ["0", "18", "100"], hostile: HOSTILE_TIPS },
+  people: { blank: ["", "  "], valid: ["1", "3", "999"], hostile: HOSTILE_PEOPLE },
+};
 
-test("no returned value is ever NaN, Infinity or negative, across every hostile input combined", () => {
-  const values = ["-5", "1e308", "NaN", "Infinity", "1.234", "1,248.60", "1000000", ".", "0x10", "101", "-1", "1.5", "1e2", "0", "1000", "0x10", "abc", "2.5", ""];
-  for (const bill of values) {
-    for (const tip of values) {
-      for (const people of values) {
-        const r = calc({ bill, tip, people });
+function sweepValues(field) {
+  const { blank, valid, hostile } = SWEEP[field];
+  return [
+    ...blank.map((value) => ({ value, kind: "blank" })),
+    ...valid.map((value) => ({ value, kind: "valid" })),
+    ...hostile.map((value) => ({ value, kind: "hostile" })),
+  ];
+}
+
+test("every blank/valid/hostile combination: invalid names exactly the bad fields, results need every field they use", () => {
+  for (const bill of sweepValues("bill")) {
+    for (const tip of sweepValues("tip")) {
+      for (const people of sweepValues("people")) {
+        const label = JSON.stringify([bill.value, tip.value, people.value]);
+        const r = calc({ bill: bill.value, tip: tip.value, people: people.value });
+        const expectedInvalid = [
+          ["bill", bill],
+          ["tip", tip],
+          ["people", people],
+        ]
+          .filter(([, v]) => v.kind === "hostile")
+          .map(([name]) => name);
+        assert.deepStrictEqual(r.invalid, expectedInvalid, label);
+        const hasTotal = bill.kind === "valid" && tip.kind === "valid";
+        const hasEach = hasTotal && people.kind === "valid";
+        assert.equal(r.tipCents !== null, hasTotal, `tipCents ${label}`);
+        assert.equal(r.totalCents !== null, hasTotal, `totalCents ${label}`);
+        assert.equal(r.eachCents !== null, hasEach, `eachCents ${label}`);
+        assert.equal(r.collectedCents !== null, hasEach, `collectedCents ${label}`);
         for (const key of ["tipCents", "totalCents", "eachCents", "collectedCents"]) {
           const v = r[key];
           if (v !== null) {
-            assert.ok(Number.isSafeInteger(v), `${key} must be a safe integer for ${bill}/${tip}/${people}, got ${v}`);
-            assert.ok(v >= 0, `${key} must not be negative for ${bill}/${tip}/${people}, got ${v}`);
+            assert.ok(Number.isSafeInteger(v) && v >= 0, `${key} must be a non-negative safe integer for ${label}, got ${v}`);
           }
         }
       }
