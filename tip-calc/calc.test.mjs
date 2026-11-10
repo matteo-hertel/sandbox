@@ -9,6 +9,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const source = fs.readFileSync(path.join(__dirname, "calc.js"), "utf8");
 vm.runInThisContext(source, { filename: "calc.js" });
 
+test("calc.js declares exactly one global, calc", () => {
+  const context = vm.createContext({});
+  vm.runInContext(source, context);
+  assert.deepStrictEqual(Object.keys(context), ["calc"]);
+});
+
 test("100.00 / 18 / 3 is the brief's worked example", () => {
   assert.deepStrictEqual(calc({ bill: "100.00", tip: "18", people: "3" }), {
     tipCents: 1800,
@@ -159,7 +165,7 @@ test("no returned value is ever NaN, Infinity or negative, across every hostile 
         for (const key of ["tipCents", "totalCents", "eachCents", "collectedCents"]) {
           const v = r[key];
           if (v !== null) {
-            assert.ok(Number.isFinite(v), `${key} must be finite for ${bill}/${tip}/${people}, got ${v}`);
+            assert.ok(Number.isSafeInteger(v), `${key} must be a safe integer for ${bill}/${tip}/${people}, got ${v}`);
             assert.ok(v >= 0, `${key} must not be negative for ${bill}/${tip}/${people}, got ${v}`);
           }
         }
@@ -187,6 +193,10 @@ test("rounding sweep: half up on the tip, the table is never short, overage unde
       assert.ok(diff > -50 && diff <= 50, `half-up rounding for ${billStr}/${tip}: diff ${diff}`);
       for (const people of PEOPLE) {
         const withPeople = calc({ bill: billStr, tip: String(tip), people: String(people) });
+        assert.deepStrictEqual(withPeople.invalid, [], `invalid for ${billStr}/${tip}/${people}`);
+        for (const key of ["tipCents", "totalCents", "eachCents", "collectedCents"]) {
+          assert.ok(Number.isSafeInteger(withPeople[key]), `${key} is a safe integer for ${billStr}/${tip}/${people}: ${withPeople[key]}`);
+        }
         assert.ok(withPeople.eachCents * people >= withPeople.totalCents, `table never short for ${billStr}/${tip}/${people}`);
         assert.ok(withPeople.eachCents * people - withPeople.totalCents < people, `overage under a cent per person for ${billStr}/${tip}/${people}`);
         assert.equal(withPeople.collectedCents, withPeople.eachCents * people, `collectedCents for ${billStr}/${tip}/${people}`);

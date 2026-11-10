@@ -77,6 +77,20 @@ async function openPage(contextOptions) {
   return { context, page, tracker };
 }
 
+async function assertClean(page, tracker) {
+  const storage = await page.evaluate(async () => ({
+    localStorage: localStorage.length,
+    sessionStorage: sessionStorage.length,
+    indexedDB: (await indexedDB.databases()).length,
+  }));
+  assert.deepStrictEqual(storage, { localStorage: 0, sessionStorage: 0, indexedDB: 0 });
+  assert.deepStrictEqual(tracker.nonFileRequests, []);
+  assert.deepStrictEqual(tracker.failedRequests, []);
+  assert.equal(tracker.wsCount, 0);
+  assert.deepStrictEqual(tracker.consoleErrors, []);
+  assert.deepStrictEqual(tracker.pageErrors, []);
+}
+
 async function setFields(page, { bill, tip, people }) {
   await page.fill("#bill", bill === undefined ? "" : bill);
   await page.fill("#tip", tip === undefined ? "" : tip);
@@ -199,25 +213,14 @@ test("offline load: no network, no console/page errors, empty state, fonts, work
     const billMetrics = await page.locator("#bill").evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
     assert.ok(billMetrics.scrollWidth <= billMetrics.clientWidth, JSON.stringify(billMetrics));
 
-    const storage = await page.evaluate(async () => ({
-      localStorage: localStorage.length,
-      sessionStorage: sessionStorage.length,
-      indexedDB: (await indexedDB.databases()).length,
-    }));
-    assert.deepStrictEqual(storage, { localStorage: 0, sessionStorage: 0, indexedDB: 0 });
-
-    assert.deepStrictEqual(tracker.nonFileRequests, []);
-    assert.deepStrictEqual(tracker.failedRequests, []);
-    assert.equal(tracker.wsCount, 0);
-    assert.deepStrictEqual(tracker.consoleErrors, []);
-    assert.deepStrictEqual(tracker.pageErrors, []);
+    await assertClean(page, tracker);
   } finally {
     await context.close();
   }
 });
 
 test("Bill field's top edge does not move across empty, part-filled, rounded and invalid states", async () => {
-  const { context, page } = await openPage();
+  const { context, page, tracker } = await openPage();
   try {
     await page.goto(PAGE_URL);
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -238,13 +241,15 @@ test("Bill field's top edge does not move across empty, part-filled, rounded and
     assert.equal(partFilledTop, emptyTop);
     assert.equal(roundedTop, emptyTop);
     assert.equal(invalidTop, emptyTop);
+
+    await assertClean(page, tracker);
   } finally {
     await context.close();
   }
 });
 
 test("320x208 keypad-up geometry: readout and the focused field stay whole and apart", async () => {
-  const { context, page } = await openPage({ viewport: { width: 320, height: 208 } });
+  const { context, page, tracker } = await openPage({ viewport: { width: 320, height: 208 } });
   try {
     await page.goto(PAGE_URL);
     await setFields(page, { bill: "100", tip: "18", people: "3" });
@@ -258,21 +263,25 @@ test("320x208 keypad-up geometry: readout and the focused field stay whole and a
       assert.ok(within(fieldBox, 320, 208), `${id} field must be in the 320x208 viewport: ${JSON.stringify(fieldBox)}`);
       assert.ok(!overlaps(readoutBox, fieldBox), `readout and ${id} field must not overlap: ${JSON.stringify({ readoutBox, fieldBox })}`);
     }
+
+    await assertClean(page, tracker);
   } finally {
     await context.close();
   }
 });
 
 const WORD_ROWS = [
-  { bill: "", tip: "", people: "", note: "Type the bill. Each share shows here.", msgs: {} },
-  { bill: "64.50", tip: "", people: "", note: "Type the tip. Each share shows here.", msgs: {} },
-  { bill: "64.50", tip: "18", people: "", note: "Type the head count. Each share shows here.", msgs: {} },
+  { bill: "", tip: "", people: "", note: "Type the bill. Each share shows here.", msgs: {}, tipAmount: "", totalAmount: "" },
+  { bill: "64.50", tip: "", people: "", note: "Type the tip. Each share shows here.", msgs: {}, tipAmount: "", totalAmount: "" },
+  { bill: "64.50", tip: "18", people: "", note: "Type the head count. Each share shows here.", msgs: {}, tipAmount: "11.61", totalAmount: "76.11" },
   {
     bill: "",
     tip: "18",
     people: "0",
     note: "Type the bill. Each share shows here.",
     msgs: { people: "People: enter a whole number, 1 to 999." },
+    tipAmount: "",
+    totalAmount: "",
   },
   {
     bill: "1.234",
@@ -280,6 +289,8 @@ const WORD_ROWS = [
     people: "3",
     note: "Fix the bill to see each share.",
     msgs: { bill: "Bill: enter an amount like 64.50, up to 999999.99." },
+    tipAmount: "",
+    totalAmount: "",
   },
   {
     bill: "64.50",
@@ -287,6 +298,8 @@ const WORD_ROWS = [
     people: "3",
     note: "Fix the tip to see each share.",
     msgs: { tip: "Tip: enter a whole percent, 0 to 100." },
+    tipAmount: "",
+    totalAmount: "",
   },
   {
     bill: "52.80",
@@ -294,6 +307,8 @@ const WORD_ROWS = [
     people: "2.5",
     note: "Fix the head count to see each share.",
     msgs: { people: "People: enter a whole number, 1 to 999." },
+    tipAmount: "7.92",
+    totalAmount: "60.72",
   },
   {
     bill: "1.234",
@@ -305,18 +320,23 @@ const WORD_ROWS = [
       tip: "Tip: enter a whole percent, 0 to 100.",
       people: "People: enter a whole number, 1 to 999.",
     },
+    tipAmount: "",
+    totalAmount: "",
   },
 ];
 
-test("the Words table: each row shows exactly its readout note and messages, no figure, readout stays 96px with the note inside it", async () => {
-  const { context, page } = await openPage();
+test("the Words table: each row shows exactly its readout note and messages, no figure, readout is exactly 96px with the note inside it", async () => {
+  const { context, page, tracker } = await openPage();
   try {
     await page.goto(PAGE_URL);
     for (const row of WORD_ROWS) {
       await setFields(page, row);
+      await page.evaluate(() => document.fonts.ready);
       const readout = await readoutState(page);
       assert.equal(readout.figureHidden, true, JSON.stringify(row));
       assert.equal(readout.noteText, row.note, JSON.stringify(row));
+      assert.equal(await page.textContent("#tip-amount"), row.tipAmount, JSON.stringify(row));
+      assert.equal(await page.textContent("#total-amount"), row.totalAmount, JSON.stringify(row));
 
       for (const name of ["bill", "tip", "people"]) {
         const field = await fieldState(page, name);
@@ -333,16 +353,18 @@ test("the Words table: each row shows exactly its readout note and messages, no 
 
       const readoutBox = await page.locator(".readout").boundingBox();
       const noteBox = await page.locator("#each-note").boundingBox();
-      assert.ok(readoutBox.height >= 96 - EPS, `readout must be at least 96px tall: ${readoutBox.height}`);
+      assert.ok(Math.abs(readoutBox.height - 96) <= EPS, `readout must be 96px tall: ${readoutBox.height}`);
       assert.ok(contains(readoutBox, noteBox), `note box must be inside the readout box for ${JSON.stringify(row)}`);
     }
+
+    await assertClean(page, tracker);
   } finally {
     await context.close();
   }
 });
 
 test("typing 64.50 into Bill key by key with tip 18 and People 3 never flashes a Bill message", async () => {
-  const { context, page } = await openPage();
+  const { context, page, tracker } = await openPage();
   try {
     await page.goto(PAGE_URL);
     await page.fill("#tip", "18");
@@ -361,13 +383,15 @@ test("typing 64.50 into Bill key by key with tip 18 and People 3 never flashes a
       assert.equal(bill.ariaInvalid, null);
       assert.equal(bill.msgHidden, true);
     }
+
+    await assertClean(page, tracker);
   } finally {
     await context.close();
   }
 });
 
 test("clearing fields without an input event and dispatching pageshow re-renders the empty state", async () => {
-  const { context, page } = await openPage();
+  const { context, page, tracker } = await openPage();
   try {
     await page.goto(PAGE_URL);
     await setFields(page, { bill: "100", tip: "18", people: "3" });
@@ -386,13 +410,15 @@ test("clearing fields without an input event and dispatching pageshow re-renders
     readout = await readoutState(page);
     assert.equal(readout.figureHidden, true);
     assert.equal(readout.noteText, "Type the bill. Each share shows here.");
+
+    await assertClean(page, tracker);
   } finally {
     await context.close();
   }
 });
 
 test("access: lang, title, labels, tab order, aria wiring, status role, background", async () => {
-  const { context, page } = await openPage();
+  const { context, page, tracker } = await openPage();
   try {
     await page.goto(PAGE_URL);
 
@@ -445,13 +471,15 @@ test("access: lang, title, labels, tab order, aria wiring, status role, backgrou
 
     const readoutBg = await page.evaluate(() => getComputedStyle(document.querySelector(".readout")).backgroundColor);
     assert.equal(readoutBg, "rgb(250, 247, 238)");
+
+    await assertClean(page, tracker);
   } finally {
     await context.close();
   }
 });
 
 test("reduced motion sets every field's transition-duration to 0s", async () => {
-  const { context, page } = await openPage({ reducedMotion: "reduce" });
+  const { context, page, tracker } = await openPage({ reducedMotion: "reduce" });
   try {
     await page.goto(PAGE_URL);
     for (const id of ["bill", "tip", "people"]) {
@@ -459,13 +487,15 @@ test("reduced motion sets every field's transition-duration to 0s", async () => 
       const parts = duration.split(",").map((d) => d.trim());
       assert.ok(parts.length > 0 && parts.every((d) => d === "0s"), `${id} transition-duration under reduced motion: ${duration}`);
     }
+
+    await assertClean(page, tracker);
   } finally {
     await context.close();
   }
 });
 
 test("320x208: underlying content does not cover the readout figure when People is focused", async () => {
-  const { context, page } = await openPage({ viewport: { width: 320, height: 208 } });
+  const { context, page, tracker } = await openPage({ viewport: { width: 320, height: 208 } });
   try {
     await page.goto(PAGE_URL);
     await setFields(page, { bill: "100", tip: "18", people: "3" });
@@ -481,6 +511,8 @@ test("320x208: underlying content does not cover the readout figure when People 
       return Boolean(el && el.closest(".readout"));
     });
     assert.ok(hit, "the element at the figure's centre must be inside the readout");
+
+    await assertClean(page, tracker);
   } finally {
     await context.close();
   }

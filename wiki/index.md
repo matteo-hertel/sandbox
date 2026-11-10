@@ -23,7 +23,7 @@ _None yet — the first ADR lands with [[plan]]._
 
 ### Incident notes
 
-_None yet — root-cause writeups land here as they happen._
+- [[notes/2026-11-10-tip-calc-gate-checks-in-one-test]] — tip-calc's gate checks covered one browser context, and the Words and sweep tests skipped exact values
 
 ## Knowledge base
 
